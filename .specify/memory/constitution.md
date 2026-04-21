@@ -1,50 +1,63 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+- Version change: [PROJECT_NAME] Constitution -> 1.0.0
+- List of modified principles:
+    - [PRINCIPLE_1_NAME] -> I. Clean Architecture (Presentation, Domain, Data)
+    - [PRINCIPLE_2_NAME] -> II. SOLID & Feature-First Structure
+    - [PRINCIPLE_3_NAME] -> III. Responsive Material UI/UX
+    - [PRINCIPLE_4_NAME] -> IV. Provider State Management
+    - [PRINCIPLE_5_NAME] -> V. Data Abstraction (Repository Pattern)
+- Added sections: VI. Code Quality & Scalability, VII. Development Workflow
+- Templates requiring updates:
+    - .specify/templates/plan-template.md (Reflects Repository pattern gates)
+    - .specify/templates/tasks-template.md (Reflects layer-based ordering)
+- Follow-up TODOs: None
+-->
+
+# Investment Agenda Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Clean Architecture (Presentation, Domain, Data)
+The application MUST be structured into three distinct layers to ensure separation of concerns:
+- **Domain**: Strictly business logic (Entities, Use Cases, Repository interfaces). NO external dependencies (no Flutter, no external plugins).
+- **Data**: Implementation of Repositories, Data Sources (local/remote APIs), and Data Models (JSON mapping). 
+- **Presentation**: UI Widgets and State Management (Providers).
+Dependencies MUST point inwards: Presentation -> Domain <- Data.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. SOLID & Feature-First Structure
+- **SOLID**: All code MUST adhere to SOLID principles to ensure maintainability and testability.
+- **Feature-First**: Files MUST be organized by feature (e.g., `lib/features/investments/`) rather than by technical type (e.g., `lib/models/`). Each feature folder should contain its own `presentation`, `domain`, and `data` subdirectories.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Responsive Material UI/UX
+- **Material Design**: Follow Material Design standards for all UI elements.
+- **Visual Excellence**: UI must be "premium," simple, and readable. Use Cards for data presentation.
+- **User Feedback**: Provide immediate feedback for user actions using Snackbars and Dialogs.
+- **Responsiveness**: Layouts MUST be tested and optimized for different screen sizes.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Provider State Management
+- **Provider**: Use the `provider` package for state management.
+- **Simplicity**: Logic MUST reside in `ChangeNotifier` classes (or similar) within the presentation layer, separate from the widget tree.
+- **Scalability**: Keep providers granular to avoid unnecessary rebuilds.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Data Abstraction (Repository Pattern)
+- **Repository Pattern**: All database or API interactions MUST be abstracted behind Repository interfaces defined in the Domain layer.
+- **Future-Proofing**: The system MUST be prepared for swapping local storage (SQLite) with cloud storage (Firebase/Supabase) without affecting the Domain or Presentation layers.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## VI. Code Quality & Scalability
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- **Meaningful Naming**: Use descriptive, intention-revealing names for all variables, classes, and functions.
+- **DRY (Don't Repeat Yourself)**: Abstract common logic and UI components into reusable widgets and utilities.
+- **Small Widgets**: Keep widgets small and composable. Avoid large, deeply nested build methods.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## VII. Development Workflow
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- **Layer-First Implementation**: When building a feature, start with the Domain (Entities/Interfaces) -> Data (Implementation) -> Presentation (UI).
+- **Unit Testing**: Business logic in the Domain layer should be unit testable with 100% logic coverage goal.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- **Amendment**: Any changes to these principles require a minor version bump and an update to the `plan-template.md` gates.
+- **Compliance**: Every implementation plan MUST include a "Constitution Check" ensuring adherence to the layers and patterns defined here.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-04-21 | **Last Amended**: 2026-04-21

@@ -31,7 +31,12 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] I. Clean Architecture: Does the design strictly separate Domain, Data, and Presentation?
+- [ ] II. Feature-First: Is the logic organized under `features/`?
+- [ ] III. Responsive UI: Are Material design and responsiveness prioritized?
+- [ ] IV. Provider: Is state management handled via Provider?
+- [ ] V. Repository Pattern: Are data sources abstracted?
+- [ ] VI. Code Quality: Are names meaningful and widgets composable?
 
 ## Project Structure
 
