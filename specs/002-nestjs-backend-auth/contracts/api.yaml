@@ -1,0 +1,86 @@
+openapi: 3.0.0
+info:
+  title: NestJS Backend Authentication API
+  version: 1.0.0
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDto'
+      responses:
+        '201':
+          description: User successfully registered
+        '400':
+          description: Validation error
+        '409':
+          description: Email already exists
+  /auth/login:
+    post:
+      summary: Authenticate user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+        '401':
+          description: Unauthorized
+  /auth/logout:
+    post:
+      summary: Logout user (invalidate refresh token)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+        '401':
+          description: Unauthorized
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          description: Min 8 chars, 1 upper, 1 lower, 1 number, 1 special char
+    LoginDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    AuthToken:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string

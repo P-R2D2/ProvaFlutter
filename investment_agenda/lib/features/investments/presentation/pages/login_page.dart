@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) context.go('/');
     } else {
       setState(() {
-        _errorMessage = 'Invalid username or password';
+        _errorMessage = 'Usuário ou senha inválidos';
       });
     }
   }
@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Investment Agenda')),
+      appBar: AppBar(title: const Text('Agenda de Investimentos')),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -41,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Welcome Back',
+              'Bem-vindo',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
             TextField(
               controller: _usernameController,
               decoration: const InputDecoration(
-                labelText: 'Username',
+                labelText: 'Usuário',
                 prefixIcon: Icon(Icons.person),
               ),
             ),
@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
             TextField(
               controller: _passwordController,
               decoration: const InputDecoration(
-                labelText: 'Password',
+                labelText: 'Senha',
                 prefixIcon: Icon(Icons.lock),
               ),
               obscureText: true,
@@ -76,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: const Text('Login'),
+              child: const Text('Entrar'),
             ),
           ],
         ),

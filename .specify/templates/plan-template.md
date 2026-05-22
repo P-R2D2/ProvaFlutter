@@ -31,12 +31,14 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- [ ] I. Clean Architecture: Does the design strictly separate Domain, Data, and Presentation?
-- [ ] II. Feature-First: Is the logic organized under `features/`?
-- [ ] III. Responsive UI: Are Material design and responsiveness prioritized?
-- [ ] IV. Provider: Is state management handled via Provider?
-- [ ] V. Repository Pattern: Are data sources abstracted?
-- [ ] VI. Code Quality: Are names meaningful and widgets composable?
+- [ ] I. Clean Architecture: Does the design strictly separate Domain, Data, and Presentation/Controllers?
+- [ ] II. Feature-First/Modular: Is the logic organized under `features/` or backend `modules/`?
+- [ ] III. Responsive UI: Are Material design and responsiveness prioritized (Frontend)?
+- [ ] IV. Provider: Is state management handled via Provider (Frontend)?
+- [ ] V. Repository Pattern: Are data sources abstracted behind Repositories?
+- [ ] VI. Code Quality: Are names meaningful and logic DRY?
+- [ ] VII. Backend Security: Is JWT used for authentication and class-validator for DTOs?
+- [ ] VIII. Backend Modular Structure: Are Auth and Users modules isolated in NestJS?
 
 ## Project Structure
 

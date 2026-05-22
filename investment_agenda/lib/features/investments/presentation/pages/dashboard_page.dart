@@ -19,7 +19,7 @@ class DashboardPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Investment Agenda'),
+        title: const Text('Agenda de Investimentos'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -60,7 +60,7 @@ class DashboardPage extends StatelessWidget {
                           await provider.deleteInvestment(investment.id);
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Investment deleted')),
+                              const SnackBar(content: Text('Investimento deletado')),
                             );
                           }
                         }
@@ -109,7 +109,7 @@ class DashboardPage extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'Total Portfolio Value',
+            'Valor Total do Portfólio',
             style: TextStyle(
               color: Theme.of(context).colorScheme.onPrimaryContainer,
               fontWeight: FontWeight.w500,
@@ -139,16 +139,16 @@ class DashboardPage extends StatelessWidget {
               size: 80, color: Colors.grey[600]),
           const SizedBox(height: 24),
           const Text(
-            'Your portfolio is empty',
+            'Seu portfólio está vazio',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Text('Add your first investment to start tracking'),
+          const Text('Adicione seu primeiro investimento para começar a acompanhar'),
           const SizedBox(height: 32),
           ElevatedButton.icon(
             onPressed: () => context.push('/add'),
             icon: const Icon(Icons.add),
-            label: const Text('Add Investment'),
+            label: const Text('Adicionar Investimento'),
           ),
         ],
       ),

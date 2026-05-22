@@ -50,8 +50,8 @@ class _InvestmentFormPageState extends State<InvestmentFormPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(widget.investment == null
-                  ? 'Investment added'
-                  : 'Investment updated')),
+                  ? 'Investimento adicionado'
+                  : 'Investimento atualizado')),
         );
         context.pop();
       }
@@ -63,7 +63,7 @@ class _InvestmentFormPageState extends State<InvestmentFormPage> {
     final isEditing = widget.investment != null;
 
     return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? 'Edit Investment' : 'Add Investment')),
+      appBar: AppBar(title: Text(isEditing ? 'Editar Investimento' : 'Adicionar Investimento')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -72,23 +72,23 @@ class _InvestmentFormPageState extends State<InvestmentFormPage> {
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(
-                labelText: 'Investment Name',
-                hintText: 'e.g. S&P 500 Index',
+                labelText: 'Nome do Investimento',
+                hintText: 'e.g. Tesouro Direto',
               ),
               validator: (value) =>
-                  value == null || value.isEmpty ? 'Please enter a name' : null,
+                  value == null || value.isEmpty ? 'Digite o nome do investimento' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _amountController,
               decoration: const InputDecoration(
-                labelText: 'Amount Invested',
+                labelText: 'Valor Investido',
                 prefixText: '\$ ',
               ),
               keyboardType: TextInputType.number,
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter an amount';
-                if (double.tryParse(value) == null) return 'Enter a valid number';
+                if (value == null || value.isEmpty) return 'Digite o valor investido';
+                if (double.tryParse(value) == null) return 'Digite um número válido';
                 return null;
               },
             ),
@@ -96,13 +96,13 @@ class _InvestmentFormPageState extends State<InvestmentFormPage> {
             TextFormField(
               controller: _returnController,
               decoration: const InputDecoration(
-                labelText: 'Monthly Return',
+                labelText: 'Rendimento Mensal',
                 prefixText: '\$ ',
               ),
               keyboardType: TextInputType.number,
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter return';
-                if (double.tryParse(value) == null) return 'Enter a valid number';
+                if (value == null || value.isEmpty) return 'Digite o rendimento mensal';
+                if (double.tryParse(value) == null) return 'Digite um número válido';
                 return null;
               },
             ),
@@ -112,7 +112,7 @@ class _InvestmentFormPageState extends State<InvestmentFormPage> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: Text(isEditing ? 'Update Investment' : 'Add Investment'),
+              child: Text(isEditing ? 'Atualizar Investimento' : 'Adicionar Investimento'),
             ),
           ],
         ),
