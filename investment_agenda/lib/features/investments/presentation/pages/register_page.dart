@@ -3,38 +3,79 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   String? _errorMessage;
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
+
+  // Password rules — mirrors the backend RegisterDto regex
+  static final _passwordRegex = RegExp(
+    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',
+  );
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
+  String? _validateLocally() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirm = _confirmPasswordController.text;
+
+    if (email.isEmpty || !email.contains('@')) {
+      return 'Informe um e-mail válido';
+    }
+    if (!_passwordRegex.hasMatch(password)) {
+      return 'A senha deve ter ao menos 8 caracteres, incluindo maiúscula, minúscula, número e caractere especial (@\$!%*?&)';
+    }
+    if (password != confirm) {
+      return 'As senhas não coincidem';
+    }
+    return null;
+  }
+
+  Future<void> _register() async {
+    final localError = _validateLocally();
+    if (localError != null) {
+      setState(() => _errorMessage = localError);
+      return;
+    }
+
     setState(() => _errorMessage = null);
 
-    final error = await context.read<AuthProvider>().login(
+    final error = await context.read<AuthProvider>().register(
           _emailController.text.trim(),
           _passwordController.text,
         );
 
+    if (!mounted) return;
+
     if (error != null) {
       setState(() => _errorMessage = error);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cadastro realizado! Faça login para continuar.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.pop();
     }
-    // Navigation is handled by GoRouter redirect via AuthProvider.isAuthenticated
   }
 
   @override
@@ -44,23 +85,25 @@ class _LoginPageState extends State<LoginPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Criar conta'),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Logo / header
                 Icon(
-                  Icons.account_balance_wallet,
-                  size: 72,
+                  Icons.person_add_outlined,
+                  size: 56,
                   color: theme.colorScheme.primary,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Text(
-                  'Agenda de Investimentos',
+                  'Cadastre-se',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -68,15 +111,15 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Entre na sua conta para continuar',
+                  'Crie sua conta para começar a acompanhar seus investimentos',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 36),
 
-                // Email field
+                // Email
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -90,25 +133,47 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Password field
+                // Password
                 TextField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => _login(),
+                  textInputAction: TextInputAction.next,
                   enabled: !isLoading,
                   decoration: InputDecoration(
                     labelText: 'Senha',
                     prefixIcon: const Icon(Icons.lock_outlined),
                     border: const OutlineInputBorder(),
+                    helperText:
+                        'Mín. 8 chars, maiúscula, número e caractere especial',
+                    helperMaxLines: 2,
                     suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                      ),
+                      icon: Icon(_obscurePassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined),
                       onPressed: () => setState(
                           () => _obscurePassword = !_obscurePassword),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Confirm password
+                TextField(
+                  controller: _confirmPasswordController,
+                  obscureText: _obscureConfirm,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _register(),
+                  enabled: !isLoading,
+                  decoration: InputDecoration(
+                    labelText: 'Confirmar senha',
+                    prefixIcon: const Icon(Icons.lock_outlined),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureConfirm
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined),
+                      onPressed: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
                     ),
                   ),
                 ),
@@ -124,6 +189,7 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(Icons.error_outline,
                             color: theme.colorScheme.onErrorContainer,
@@ -141,11 +207,10 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ],
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
 
-                // Login button
                 FilledButton(
-                  onPressed: isLoading ? null : _login,
+                  onPressed: isLoading ? null : _register,
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -157,28 +222,15 @@ class _LoginPageState extends State<LoginPage> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Entrar',
+                      : const Text('Criar conta',
                           style: TextStyle(fontSize: 16)),
                 ),
 
                 const SizedBox(height: 16),
 
-                // Register link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Não tem uma conta? ',
-                      style: TextStyle(
-                          color:
-                              theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                    ),
-                    TextButton(
-                      onPressed:
-                          isLoading ? null : () => context.push('/register'),
-                      child: const Text('Cadastrar'),
-                    ),
-                  ],
+                TextButton(
+                  onPressed: isLoading ? null : () => context.pop(),
+                  child: const Text('Já tenho uma conta'),
                 ),
               ],
             ),

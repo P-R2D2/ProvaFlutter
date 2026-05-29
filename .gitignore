@@ -1,0 +1,63 @@
+# ============================================================
+# Root .gitignore — ProvaFlutter monorepo
+# ============================================================
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# ============================================================
+# NestJS / Node (backend/)
+# ============================================================
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# SQLite database — never commit real data
+backend/database.sqlite
+backend/database.sqlite-shm
+backend/database.sqlite-wal
+
+# Coverage
+backend/coverage/
+
+# ============================================================
+# Flutter (investment_agenda/)
+# ============================================================
+investment_agenda/.dart_tool/
+investment_agenda/.flutter-plugins
+investment_agenda/.flutter-plugins-dependencies
+investment_agenda/.pub-cache/
+investment_agenda/.pub/
+investment_agenda/build/
+investment_agenda/coverage/
+
+# Generated files
+investment_agenda/**/*.g.dart
+investment_agenda/**/*.freezed.dart
+
+# ============================================================
+# Spec Kit / agents
+# ============================================================
+.specify/
+.agents/
+
+# ============================================================
+# Misc
+# ============================================================
+*.class
+*.pyc
