@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import '../../features/investments/presentation/pages/login_page.dart';
+import '../../features/investments/presentation/pages/register_page.dart';
 import '../../features/investments/presentation/pages/dashboard_page.dart';
 import '../../features/investments/presentation/pages/investment_form_page.dart';
 import '../../features/investments/presentation/providers/auth_provider.dart';
@@ -12,16 +13,21 @@ class AppRouter {
       refreshListenable: authProvider,
       redirect: (context, state) {
         final isAuthenticated = authProvider.isAuthenticated;
-        final isLoggingIn = state.matchedLocation == '/login';
+        final location = state.matchedLocation;
+        final isPublic = location == '/login' || location == '/register';
 
-        if (!isAuthenticated && !isLoggingIn) return '/login';
-        if (isAuthenticated && isLoggingIn) return '/';
+        if (!isAuthenticated && !isPublic) return '/login';
+        if (isAuthenticated && isPublic) return '/';
         return null;
       },
       routes: [
         GoRoute(
           path: '/login',
           builder: (context, state) => const LoginPage(),
+        ),
+        GoRoute(
+          path: '/register',
+          builder: (context, state) => const RegisterPage(),
         ),
         GoRoute(
           path: '/',

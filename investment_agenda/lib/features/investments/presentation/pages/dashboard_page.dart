@@ -91,7 +91,7 @@ class DashboardPage extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             Theme.of(context).colorScheme.primaryContainer,
-            Theme.of(context).colorScheme.surfaceVariant,
+          Theme.of(context).colorScheme.surfaceContainerHighest,
           ],
         ),
         borderRadius: const BorderRadius.only(
@@ -100,7 +100,7 @@ class DashboardPage extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),

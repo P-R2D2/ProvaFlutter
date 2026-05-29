@@ -1,0 +1,31 @@
+# ============================================================
+# NestJS / Node .gitignore
+# ============================================================
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# SQLite database — never commit real data
+database.sqlite
+database.sqlite-shm
+database.sqlite-wal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Coverage
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
