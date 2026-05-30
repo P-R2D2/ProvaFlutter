@@ -8,17 +8,72 @@ import '../widgets/delete_confirmation_dialog.dart';
 import '../providers/auth_provider.dart';
 import '../../domain/entities/investment.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final authProvider = context.read<AuthProvider>();
+      if (authProvider.showProfileModal) {
+        authProvider.clearProfileModal();
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Perfil de Investidor'),
+            content: Text(
+              'Sua entrevista foi concluída!\n\n'
+              'Seu Perfil: ${authProvider.perfilInvestidor ?? "Indefinido"}\n'
+              'Sua Pontuação: ${authProvider.pontuacaoPerfil ?? 0}/100',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Entendi'),
+              ),
+            ],
+          ),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.simpleCurrency(
       locale: Localizations.localeOf(context).toString(),
     );
+    final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
       appBar: AppBar(
+        leading: Tooltip(
+          message: 'Sua pontuação de perfil',
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '${authProvider.pontuacaoPerfil ?? 0}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ),
+          ),
+        ),
         title: const Text('Agenda de Investimentos'),
         actions: [
           IconButton(

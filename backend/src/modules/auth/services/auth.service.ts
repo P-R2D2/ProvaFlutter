@@ -35,6 +35,8 @@ export class AuthService {
       accessToken,
       refreshToken,
       entrevistaConcluida: user.entrevistaConcluida,
+      perfilInvestidor: user.perfilInvestidor,
+      pontuacaoPerfil: user.pontuacaoPerfil,
     };
   }
 

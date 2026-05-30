@@ -81,7 +81,10 @@ class _OnboardingChatPageState extends State<OnboardingChatPage> {
       if (response.finalizado) {
         // Marca como concluído no AuthProvider para permitir acesso ao Dashboard
         if (mounted) {
-          context.read<AuthProvider>().completeEntrevista();
+          context.read<AuthProvider>().completeEntrevista(
+            response.perfil ?? 'Indefinido',
+            response.pontuacao ?? 0,
+          );
         }
       }
     } catch (e) {
