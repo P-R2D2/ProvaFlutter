@@ -13,4 +13,13 @@ export class User {
 
   @Column({ nullable: true, type: 'text' })
   refreshToken: string | null;
+
+  @Column({ default: false })
+  entrevistaConcluida: boolean;
+
+  @Column({ nullable: true, type: 'varchar' })
+  perfilInvestidor: string | null;
+
+  @Column({ nullable: true, type: 'int' })
+  pontuacaoPerfil: number | null;
 }

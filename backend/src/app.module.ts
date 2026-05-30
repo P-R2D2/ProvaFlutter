@@ -7,9 +7,12 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { User } from './modules/users/domain/user.entity';
+import { ConfigModule } from '@nestjs/config';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: 'database.sqlite',
@@ -18,6 +21,7 @@ import { User } from './modules/users/domain/user.entity';
     }),
     AuthModule,
     UsersModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [

@@ -34,6 +34,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
+      entrevistaConcluida: user.entrevistaConcluida,
     };
   }
 

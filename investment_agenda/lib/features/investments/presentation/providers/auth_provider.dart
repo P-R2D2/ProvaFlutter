@@ -4,6 +4,7 @@ import '../../data/services/auth_api_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   static const _tokenKey = 'auth_token';
+  static const _entrevistaKey = 'auth_entrevista';
 
   final AuthApiService _apiService = AuthApiService();
 
@@ -11,11 +12,20 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   String? _currentToken;
+  bool _entrevistaConcluida = false;
 
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String? get currentToken => _currentToken;
+  bool get entrevistaConcluida => _entrevistaConcluida;
+
+  void completeEntrevista() async {
+    _entrevistaConcluida = true;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_entrevistaKey, true);
+    notifyListeners();
+  }
 
   AuthProvider() {
     _restoreSession();
@@ -25,9 +35,11 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _restoreSession() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(_tokenKey);
+    final entrevista = prefs.getBool(_entrevistaKey) ?? false;
     if (token != null && token.isNotEmpty) {
       _currentToken = token;
       _isAuthenticated = true;
+      _entrevistaConcluida = entrevista;
       notifyListeners();
     }
   }
@@ -42,9 +54,11 @@ class AuthProvider extends ChangeNotifier {
       final result = await _apiService.login(email, password);
       _currentToken = result.accessToken;
       _isAuthenticated = true;
+      _entrevistaConcluida = result.entrevistaConcluida;
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_tokenKey, result.accessToken);
+      await prefs.setBool(_entrevistaKey, result.entrevistaConcluida);
 
       return null;
     } on AuthException catch (e) {
@@ -87,9 +101,11 @@ class AuthProvider extends ChangeNotifier {
     }
     _isAuthenticated = false;
     _currentToken = null;
+    _entrevistaConcluida = false;
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
+    await prefs.remove(_entrevistaKey);
 
     notifyListeners();
   }
