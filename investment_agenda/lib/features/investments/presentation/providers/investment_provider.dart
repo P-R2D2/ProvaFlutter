@@ -8,34 +8,67 @@ class InvestmentProvider extends ChangeNotifier {
   InvestmentProvider({required this.repository});
 
   List<Investment> _investments = [];
+  PortfolioSummary _summary = PortfolioSummary.empty();
   bool _isLoading = false;
+  String? _errorMessage;
 
   List<Investment> get investments => _investments;
+  PortfolioSummary get summary => _summary;
   bool get isLoading => _isLoading;
-
-  double get totalInvested =>
-      _investments.fold(0, (sum, item) => sum + item.amountInvested);
+  String? get errorMessage => _errorMessage;
 
   Future<void> loadInvestments() async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
-    _investments = await repository.getInvestments();
-    _isLoading = false;
+
+    try {
+      final data = await repository.getPortfolioValuation();
+      _investments = data.positions;
+      _summary = data.summary;
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> addInvestment(
+    String symbol,
+    double quantity,
+    double averagePurchasePrice,
+  ) async {
+    _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
+
+    try {
+      await repository.addInvestment(symbol, quantity, averagePurchasePrice);
+      await loadInvestments();
+      return null;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return _errorMessage;
+    }
   }
 
-  Future<void> addInvestment(Investment investment) async {
-    await repository.addInvestment(investment);
-    await loadInvestments();
-  }
+  Future<String?> deleteInvestment(String id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
-  Future<void> updateInvestment(Investment investment) async {
-    await repository.updateInvestment(investment);
-    await loadInvestments();
-  }
-
-  Future<void> deleteInvestment(String id) async {
-    await repository.deleteInvestment(id);
-    await loadInvestments();
+    try {
+      await repository.deleteInvestment(id);
+      await loadInvestments();
+      return null;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return _errorMessage;
+    }
   }
 }

@@ -24,7 +24,7 @@ export class UsersService {
     user.id = randomUUID();
     user.email = email;
     user.passwordHash = passwordHash;
-    user.refreshToken = null;
+    user.refreshTokenHash = null;
 
     return this.userRepository.save(user);
   }

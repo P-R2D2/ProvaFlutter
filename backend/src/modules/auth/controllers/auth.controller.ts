@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Request } from '@nestjs/common';
+import { Controller, Post, Body, Request, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
 import { RegisterDto } from '../dtos/register.dto';
 import { LoginDto } from '../dtos/login.dto';
 import { UsersService } from '../../users/services/users.service';
@@ -27,13 +27,25 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
+  @Public()
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refresh(@Body('refreshToken') refreshToken: string) {
+    if (!refreshToken) {
+      throw new BadRequestException('Refresh token is required');
+    }
+    return this.authService.refresh(refreshToken);
+  }
+
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
   async logout(@Request() req: any) {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     await this.authService.logout(userId);
     return { message: 'Logged out successfully' };
   }

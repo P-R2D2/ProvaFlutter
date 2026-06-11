@@ -5,6 +5,7 @@ import '../../features/investments/presentation/pages/dashboard_page.dart';
 import '../../features/investments/presentation/pages/investment_form_page.dart';
 import '../../features/investments/presentation/providers/auth_provider.dart';
 import '../../features/investments/domain/entities/investment.dart';
+import '../../features/assets/presentation/pages/asset_search_page.dart';
 
 class AppRouter {
   static GoRouter createRouter(AuthProvider authProvider) {
@@ -43,6 +44,10 @@ class AppRouter {
             final investment = state.extra as Investment?;
             return InvestmentFormPage(investment: investment);
           },
+        ),
+        GoRoute(
+          path: '/assets',
+          builder: (context, state) => const AssetSearchPage(),
         ),
       ],
     );

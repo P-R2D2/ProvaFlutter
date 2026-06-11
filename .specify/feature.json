@@ -1,3 +1,3 @@
 {
-  "feature_directory": "specs/002-nestjs-backend-auth"
+  "feature_directory": "specs/006-refresh-token-auth"
 }

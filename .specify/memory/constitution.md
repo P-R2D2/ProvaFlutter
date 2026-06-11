@@ -1,13 +1,13 @@
 <!--
 Sync Impact Report:
-- Version change: 1.0.0 -> 1.1.0
+- Version change: 1.1.0 -> 1.2.0
 - List of modified principles:
-    - [I. Clean Architecture] -> Updated to encompass backend concepts (Controllers).
-    - [II. SOLID & Feature-First Structure] -> Updated to include backend modular structure.
+    - [V. Data Abstraction (Repository Pattern)] -> [V. Data Abstraction & Repository Pattern] (Generalized to cover database abstraction policies)
+    - [VII. Backend Modules & Security] -> [VII. Backend Modules & Security] (Updated required modules list to include Portfolios and Investments)
+    - [VIII. Backend Data Abstraction] -> [VIII. Backend Data Abstraction & Persistence] (Updated to mandate PostgreSQL and Prisma ORM, and separation of business logic)
 - Added sections:
-    - VI. NestJS Clean Architecture & SOLID
-    - VII. Backend Modules & Security
-    - VIII. Backend Data Abstraction
+    - IX. Core Entities & Relationships
+    - X. Future Financial Integrations
 - Removed sections: None
 - Templates requiring updates: 
     - .specify/templates/plan-template.md (✅ updated)
@@ -40,9 +40,9 @@ Dependencies MUST point inwards: Presentation -> Domain <- Data.
 - **Simplicity**: Logic MUST reside in `ChangeNotifier` classes (or similar) within the presentation layer, separate from the widget tree.
 - **Scalability**: Keep providers granular to avoid unnecessary rebuilds.
 
-### V. Data Abstraction (Repository Pattern)
+### V. Data Abstraction & Repository Pattern
 - **Repository Pattern**: All database or API interactions MUST be abstracted behind Repository interfaces defined in the Domain layer.
-- **Future-Proofing**: The system MUST be prepared for swapping local storage (SQLite) with cloud storage (Firebase/Supabase) without affecting the Domain or Presentation layers.
+- **Future-Proofing**: The system MUST be prepared for swapping database systems or external services without affecting the Domain or Presentation layers.
 
 ## Backend Architecture (NestJS)
 
@@ -51,27 +51,39 @@ Dependencies MUST point inwards: Presentation -> Domain <- Data.
 - **Clean Architecture & SOLID**: Backend logic MUST follow Clean Architecture principles, ensuring that business logic is isolated from transport (HTTP) and persistence mechanisms. Controllers, Services, and Repositories must have single responsibilities and rely on abstractions.
 
 ### VII. Backend Modules & Security
-- **Core Modules**: The backend MUST implement distinct, isolated modules. Initial required modules are:
+- **Core Modules**: The backend MUST implement distinct, isolated modules. Required modules are:
   - **Auth**: For authentication and authorization.
   - **Users**: For user management.
+  - **Portfolios**: For portfolio management.
+  - **Investments**: For investment management.
 - **Authentication**: MUST use JWT (JSON Web Tokens) for stateless authentication.
   - Integration with **Passport JWT** is required.
   - Passwords MUST be hashed using **bcrypt**.
 - **DTO Validation**: All incoming requests MUST be validated using **class-validator** through Data Transfer Objects (DTOs).
 
-### VIII. Backend Data Abstraction
-- **Repository Pattern**: Data persistence MUST be abstracted using the Repository Pattern.
-- **Database Agnosticism**: Persistence MUST remain abstracted for future database integration. Services MUST depend on Repository interfaces, not directly on ORMs or database clients.
+### VIII. Backend Data Abstraction & Persistence
+- **Database Engine**: Relational database persistence MUST use **PostgreSQL**.
+- **ORM Framework**: Database schema, migrations, and access operations MUST be implemented using **Prisma ORM**.
+- **Separation of Logic**: Business logic MUST be separated from persistence. Services MUST depend on Repository interfaces defined in the Domain layer, not directly on the Prisma client or PostgreSQL queries. Prisma models and generated code MUST remain inside the Data layer.
+
+### IX. Core Entities & Relationships
+The backend database schema and domain models MUST define the following entities and relationships:
+- **User**: Represents application users who own portfolios.
+- **Portfolio**: Represents a collection of holdings/investments. A User can have multiple portfolios (User 1 -> N Portfolio).
+- **Investment**: Represents a specific asset holding. A Portfolio can have multiple investments (Portfolio 1 -> N Investment).
+- Relationships MUST be mapped and enforced in the database schema via Prisma.
+
+### X. Future Financial Integrations
+- **Integration Readiness**: The backend architecture MUST prepare for future financial integrations (e.g., brokerage APIs, real-time market data providers, banking APIs).
+- **Decoupling Gateways**: All financial integration adapters, API clients, and data parsers MUST implement interfaces defined in the Domain layer to allow swapping providers without modifying core business logic.
 
 ## Code Quality & Scalability
 
-### IX. Meaningful Naming & DRY
+### XI. Meaningful Naming & DRY
 - **Meaningful Naming**: Use descriptive, intention-revealing names for all variables, classes, and functions.
 - **DRY (Don't Repeat Yourself)**: Abstract common logic into reusable modules or utilities.
 
-## Development Workflow
-
-### X. Layer-First Implementation & Testing
+### XII. Layer-First Implementation & Testing
 - **Layer-First Implementation**: When building a feature, start with the Domain (Entities/Interfaces) -> Data (Implementation) -> Presentation/Controllers.
 - **Unit Testing**: Business logic in the Domain/Service layer should be unit testable with a high coverage goal.
 
@@ -80,4 +92,4 @@ Dependencies MUST point inwards: Presentation -> Domain <- Data.
 - **Amendment**: Any changes to these principles require a minor version bump and an update to the `plan-template.md` gates.
 - **Compliance**: Every implementation plan MUST include a "Constitution Check" ensuring adherence to the layers and patterns defined here.
 
-**Version**: 1.1.0 | **Ratified**: 2026-04-21 | **Last Amended**: 2026-05-15
+**Version**: 1.2.0 | **Ratified**: 2026-04-21 | **Last Amended**: 2026-06-10

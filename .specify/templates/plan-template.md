@@ -35,10 +35,13 @@
 - [ ] II. Feature-First/Modular: Is the logic organized under `features/` or backend `modules/`?
 - [ ] III. Responsive UI: Are Material design and responsiveness prioritized (Frontend)?
 - [ ] IV. Provider: Is state management handled via Provider (Frontend)?
-- [ ] V. Repository Pattern: Are data sources abstracted behind Repositories?
+- [ ] V. Data Abstraction & Repository Pattern: Are database and API interactions abstracted behind Repository interfaces?
 - [ ] VI. Code Quality: Are names meaningful and logic DRY?
-- [ ] VII. Backend Security: Is JWT used for authentication and class-validator for DTOs?
-- [ ] VIII. Backend Modular Structure: Are Auth and Users modules isolated in NestJS?
+- [ ] VII. Backend Security: Is JWT used for authentication, bcrypt for password hashing, and class-validator for DTOs?
+- [ ] VIII. Backend Modular Structure: Are modules (Auth, Users, Portfolios, Investments) modular and isolated in NestJS?
+- [ ] IX. Backend Persistence & ORM: Does the backend use PostgreSQL with Prisma ORM, keeping business logic strictly separated?
+- [ ] X. Future Financial Integrations: Are external integrations decoupled via adapters/gateways defined in the Domain layer?
+
 
 ## Project Structure
 
