@@ -5,10 +5,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { AssetsModule } from './modules/assets/assets.module';
+import { InvestmentsModule } from './modules/investments/investments.module';
+import { PortfoliosModule } from './modules/portfolios/portfolios.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { User } from './modules/users/domain/user.entity';
 import { ConfigModule } from '@nestjs/config';
 import { ChatModule } from './modules/chat/chat.module';
+import { PrismaService } from './prisma.service';
 
 @Module({
   imports: [
@@ -21,11 +25,15 @@ import { ChatModule } from './modules/chat/chat.module';
     }),
     AuthModule,
     UsersModule,
+    AssetsModule,
+    InvestmentsModule,
+    PortfoliosModule,
     ChatModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
+    PrismaService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

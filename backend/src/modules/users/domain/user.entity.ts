@@ -12,7 +12,7 @@ export class User {
   passwordHash: string;
 
   @Column({ nullable: true, type: 'text' })
-  refreshToken: string | null;
+  refreshTokenHash: string | null;
 
   @Column({ default: false })
   entrevistaConcluida: boolean;
@@ -22,4 +22,7 @@ export class User {
 
   @Column({ nullable: true, type: 'int' })
   pontuacaoPerfil: number | null;
+
+  createdAt: Date;
+  updatedAt: Date;
 }

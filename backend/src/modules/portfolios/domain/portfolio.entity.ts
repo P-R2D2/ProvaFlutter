@@ -1,0 +1,8 @@
+export class Portfolio {
+  id: string;
+  name: string;
+  description: string | null;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

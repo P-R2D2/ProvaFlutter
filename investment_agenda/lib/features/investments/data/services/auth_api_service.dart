@@ -45,6 +45,27 @@ class AuthApiService {
     );
   }
 
+  Future<AuthResult> refresh(String refreshToken) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/auth/refresh'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'refreshToken': refreshToken}),
+    );
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return AuthResult.fromJson(body);
+    }
+
+    final message = body['message'];
+    throw AuthException(
+      message is List<dynamic>
+          ? (message).join(', ')
+          : message?.toString() ?? 'Erro ao renovar sessão',
+    );
+  }
+
   Future<void> logout(String token) async {
     await http.post(
       Uri.parse('$_baseUrl/auth/logout'),

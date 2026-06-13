@@ -1,29 +1,53 @@
 import '../../domain/entities/investment.dart';
 import '../../domain/repositories/investment_repository.dart';
+import '../datasources/investments_remote_data_source.dart';
 
 class InvestmentRepositoryImpl implements InvestmentRepository {
-  final List<Investment> _investments = [];
+  final InvestmentsRemoteDataSource remoteDataSource;
+  final Future<String> Function() getToken;
+
+  InvestmentRepositoryImpl({
+    required this.remoteDataSource,
+    required this.getToken,
+  });
 
   @override
-  Future<List<Investment>> getInvestments() async {
-    return List.unmodifiable(_investments);
+  Future<PortfolioValuationData> getPortfolioValuation() async {
+    final token = await getToken();
+    final data = await remoteDataSource.getValuation(token);
+
+    final summaryJson = data['summary'] as Map<String, dynamic>? ?? {};
+    final summary = PortfolioSummary.fromJson(summaryJson);
+
+    final positionsList = data['positions'] as List<dynamic>? ?? [];
+    final positions = positionsList
+        .map((item) => Investment.fromJson(item as Map<String, dynamic>))
+        .toList();
+
+    return PortfolioValuationData(
+      positions: positions,
+      summary: summary,
+    );
   }
 
   @override
-  Future<void> addInvestment(Investment investment) async {
-    _investments.add(investment);
-  }
-
-  @override
-  Future<void> updateInvestment(Investment investment) async {
-    final index = _investments.indexWhere((item) => item.id == investment.id);
-    if (index != -1) {
-      _investments[index] = investment;
-    }
+  Future<void> addInvestment(
+    String symbol,
+    double quantity,
+    double averagePurchasePrice,
+  ) async {
+    final token = await getToken();
+    await remoteDataSource.registerPosition(
+      token,
+      symbol,
+      quantity,
+      averagePurchasePrice,
+    );
   }
 
   @override
   Future<void> deleteInvestment(String id) async {
-    _investments.removeWhere((item) => item.id == id);
+    final token = await getToken();
+    await remoteDataSource.deletePosition(token, id);
   }
 }

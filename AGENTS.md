@@ -1,5 +1,6 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-[plan.md](specs/002-nestjs-backend-auth/plan.md)
+[plan.md](specs/006-refresh-token-auth/plan.md)
 <!-- SPECKIT END -->
+

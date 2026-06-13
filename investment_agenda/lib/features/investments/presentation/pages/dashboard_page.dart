@@ -137,10 +137,21 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<InvestmentProvider>().loadInvestments();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.simpleCurrency(
-      locale: Localizations.localeOf(context).toString(),
-    );
+    final currencyFormat = NumberFormat.simpleCurrency(locale: 'pt_BR');
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
@@ -168,135 +179,293 @@ class _DashboardPageState extends State<DashboardPage> {
         title: const Text('Agenda de Investimentos'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'Buscar cotações',
+            onPressed: () => context.push('/assets'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Atualizar carteira',
+            onPressed: () =>
+                context.read<InvestmentProvider>().loadInvestments(),
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Sair',
             onPressed: () => context.read<AuthProvider>().logout(),
           ),
         ],
       ),
       body: Consumer<InvestmentProvider>(
         builder: (context, provider, child) {
-          if (provider.isLoading) {
+          if (provider.isLoading && provider.investments.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (provider.investments.isEmpty) {
-            return _buildEmptyState(context);
-          }
-
-          return Column(
-            children: [
-              _buildSummaryHeader(context, provider, currencyFormat),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: provider.investments.length,
-                  itemBuilder: (context, index) {
-                    final Investment investment = provider.investments[index];
-                    return InvestmentCard(
-                      investment: investment,
-                      onTap: () => context.push('/edit', extra: investment),
-                      onDelete: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => DeleteConfirmationDialog(
-                            itemName: investment.name,
+          return RefreshIndicator(
+            onRefresh: () => provider.loadInvestments(),
+            child: Column(
+              children: [
+                if (provider.summary.isDelayed)
+                  Container(
+                    width: double.infinity,
+                    color: Colors.amber[900]!.withOpacity(0.9),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 16,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Preços instáveis. Exibindo cotações salvas.',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
                           ),
-                        );
-
-                        if (confirm == true) {
-                          await provider.deleteInvestment(investment.id);
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Investimento deletado')),
+                        ),
+                      ],
+                    ),
+                  ),
+                _buildSummaryHeader(context, provider, currencyFormat),
+                if (provider.investments.isEmpty)
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        height: MediaQuery.of(context).size.height * 0.5,
+                        alignment: Alignment.center,
+                        child: _buildEmptyState(context),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: provider.investments.length,
+                      itemBuilder: (context, index) {
+                        final Investment investment =
+                            provider.investments[index];
+                        return InvestmentCard(
+                          investment: investment,
+                          onTap: () => context.push('/edit', extra: investment),
+                          onDelete: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => DeleteConfirmationDialog(
+                                itemName: investment.symbol,
+                              ),
                             );
-                          }
-                        }
+
+                            if (confirm == true) {
+                              final error = await provider.deleteInvestment(
+                                investment.id,
+                              );
+                              if (context.mounted) {
+                                if (error != null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(error),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Posição deletada com sucesso',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                        );
                       },
-                    );
-                  },
-                ),
-              ),
-            ],
+                    ),
+                  ),
+              ],
+            ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/add'),
+        tooltip: 'Adicionar Ativo',
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildSummaryHeader(BuildContext context, InvestmentProvider provider,
-      NumberFormat currencyFormat) {
+  Widget _buildSummaryHeader(
+    BuildContext context,
+    InvestmentProvider provider,
+    NumberFormat currencyFormat,
+  ) {
+    final summary = provider.summary;
+    final isProfit = summary.totalProfitLoss >= 0;
+    final returnColor = isProfit ? Colors.greenAccent : Colors.redAccent;
+    final sign = isProfit ? '+' : '';
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Theme.of(context).colorScheme.primaryContainer,
-          Theme.of(context).colorScheme.surfaceContainerHighest,
+            Theme.of(context).colorScheme.primaryContainer.withOpacity(0.8),
+            Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
           ],
         ),
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(40),
-          bottomRight: Radius.circular(40),
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         children: [
-          Text(
-            'Valor Total do Portfólio',
+          const Text(
+            'Patrimônio Consolidado',
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 1.2,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white70,
+              letterSpacing: 1.1,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
-            currencyFormat.format(provider.totalInvested),
-            style: TextStyle(
-              fontSize: 40,
+            currencyFormat.format(summary.totalCurrentValue),
+            style: const TextStyle(
+              fontSize: 34,
               fontWeight: FontWeight.w900,
-              color: Theme.of(context).colorScheme.primary,
+              color: Colors.white,
             ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildMetricColumn(
+                'Valor Investido',
+                currencyFormat.format(summary.totalInvested),
+                Colors.white70,
+              ),
+              Container(width: 1, height: 32, color: Colors.white24),
+              _buildMetricColumn(
+                'Resultado Geral',
+                '$sign${currencyFormat.format(summary.totalProfitLoss)}',
+                returnColor,
+                subText:
+                    '$sign${summary.totalReturnPercentage.toStringAsFixed(2)}%',
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.account_balance_wallet_outlined,
-              size: 80, color: Colors.grey[600]),
-          const SizedBox(height: 24),
-          const Text(
-            'Seu portfólio está vazio',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+  Widget _buildMetricColumn(
+    String label,
+    String value,
+    Color valueColor, {
+    String? subText,
+  }) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: Colors.white54),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: valueColor,
           ),
-          const SizedBox(height: 8),
-          const Text('Adicione seu primeiro investimento para começar a acompanhar'),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: () => context.push('/add'),
-            icon: const Icon(Icons.add),
-            label: const Text('Adicionar Investimento'),
+        ),
+        if (subText != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            subText,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: valueColor,
+            ),
           ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.account_balance_wallet_outlined,
+              size: 80,
+              color: Colors.grey[600],
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Sua carteira está vazia',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Registre sua primeira posição da B3 para acompanhar as cotações em tempo real.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.white54),
+            ),
+            const SizedBox(height: 28),
+            ElevatedButton.icon(
+              onPressed: () => context.push('/add'),
+              icon: const Icon(Icons.add),
+              label: const Text('Adicionar Ativo B3'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
