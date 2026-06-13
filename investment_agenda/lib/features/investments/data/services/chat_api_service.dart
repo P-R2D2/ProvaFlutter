@@ -18,12 +18,14 @@ class ChatResponse {
   final String content;
   final bool finalizado;
   final String? perfil;
+  final int? pontuacao;
 
   ChatResponse({
     required this.role,
     required this.content,
     required this.finalizado,
     this.perfil,
+    this.pontuacao,
   });
 
   factory ChatResponse.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class ChatResponse {
       content: json['content'] as String,
       finalizado: json['finalizado'] as bool? ?? false,
       perfil: json['perfil'] as String?,
+      pontuacao: json['pontuacao'] as int?,
     );
   }
 }

@@ -14,7 +14,7 @@ export class UsersService {
   async create(email: string, passwordPlain: string): Promise<User> {
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException('E-mail já cadastrado');
     }
 
     const saltRounds = 10;

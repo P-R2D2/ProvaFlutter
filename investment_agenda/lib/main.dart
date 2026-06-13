@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'core/routes/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/investments/presentation/providers/auth_provider.dart';
@@ -22,16 +23,29 @@ void main() {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    final authProvider = context.read<AuthProvider>();
+    _router = AppRouter.createRouter(authProvider);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
     return MaterialApp.router(
       title: 'Investment Agenda',
       theme: AppTheme.darkTheme,
-      routerConfig: AppRouter.createRouter(authProvider),
+      routerConfig: _router,
     );
   }
 }

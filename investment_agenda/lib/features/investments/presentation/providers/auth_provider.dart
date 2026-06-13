@@ -5,6 +5,8 @@ import '../../data/services/auth_api_service.dart';
 class AuthProvider extends ChangeNotifier {
   static const _tokenKey = 'auth_token';
   static const _entrevistaKey = 'auth_entrevista';
+  static const _perfilKey = 'auth_perfil';
+  static const _pontuacaoKey = 'auth_pontuacao';
 
   final AuthApiService _apiService = AuthApiService();
 
@@ -13,17 +15,33 @@ class AuthProvider extends ChangeNotifier {
   String? _errorMessage;
   String? _currentToken;
   bool _entrevistaConcluida = false;
+  String? _perfilInvestidor;
+  int? _pontuacaoPerfil;
+  bool _showProfileModal = false;
 
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String? get currentToken => _currentToken;
   bool get entrevistaConcluida => _entrevistaConcluida;
+  String? get perfilInvestidor => _perfilInvestidor;
+  int? get pontuacaoPerfil => _pontuacaoPerfil;
+  bool get showProfileModal => _showProfileModal;
 
-  void completeEntrevista() async {
+  void completeEntrevista(String perfil, int pontuacao) async {
     _entrevistaConcluida = true;
+    _perfilInvestidor = perfil;
+    _pontuacaoPerfil = pontuacao;
+    _showProfileModal = true;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_entrevistaKey, true);
+    await prefs.setString(_perfilKey, perfil);
+    await prefs.setInt(_pontuacaoKey, pontuacao);
+    notifyListeners();
+  }
+
+  void clearProfileModal() {
+    _showProfileModal = false;
     notifyListeners();
   }
 
@@ -36,10 +54,15 @@ class AuthProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(_tokenKey);
     final entrevista = prefs.getBool(_entrevistaKey) ?? false;
+    final perfil = prefs.getString(_perfilKey);
+    final pontuacao = prefs.getInt(_pontuacaoKey);
+    
     if (token != null && token.isNotEmpty) {
       _currentToken = token;
       _isAuthenticated = true;
       _entrevistaConcluida = entrevista;
+      _perfilInvestidor = perfil;
+      _pontuacaoPerfil = pontuacao;
       notifyListeners();
     }
   }
@@ -55,10 +78,18 @@ class AuthProvider extends ChangeNotifier {
       _currentToken = result.accessToken;
       _isAuthenticated = true;
       _entrevistaConcluida = result.entrevistaConcluida;
+      _perfilInvestidor = result.perfilInvestidor;
+      _pontuacaoPerfil = result.pontuacaoPerfil;
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_tokenKey, result.accessToken);
       await prefs.setBool(_entrevistaKey, result.entrevistaConcluida);
+      if (result.perfilInvestidor != null) {
+        await prefs.setString(_perfilKey, result.perfilInvestidor!);
+      }
+      if (result.pontuacaoPerfil != null) {
+        await prefs.setInt(_pontuacaoKey, result.pontuacaoPerfil!);
+      }
 
       return null;
     } on AuthException catch (e) {
@@ -102,10 +133,15 @@ class AuthProvider extends ChangeNotifier {
     _isAuthenticated = false;
     _currentToken = null;
     _entrevistaConcluida = false;
+    _perfilInvestidor = null;
+    _pontuacaoPerfil = null;
+    _showProfileModal = false;
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_entrevistaKey);
+    await prefs.remove(_perfilKey);
+    await prefs.remove(_pontuacaoKey);
 
     notifyListeners();
   }

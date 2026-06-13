@@ -56,6 +56,7 @@ REGRA DE ENCERRAMENTO: Ao receber a resposta da 7ª pergunta, você NÃO DEVE en
             content: parsed.mensagem_despedida,
             finalizado: true,
             perfil: parsed.perfil,
+            pontuacao: parsed.pontuacao,
           };
         }
       } catch (e) {

@@ -16,12 +16,12 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<AuthToken> {
     const user = await this.usersService.findByEmail(loginDto.email);
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('E-mail ou senha incorretos');
     }
 
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.passwordHash);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('E-mail ou senha incorretos');
     }
 
     const payload = { sub: user.id, email: user.email };
@@ -35,6 +35,8 @@ export class AuthService {
       accessToken,
       refreshToken,
       entrevistaConcluida: user.entrevistaConcluida,
+      perfilInvestidor: user.perfilInvestidor,
+      pontuacaoPerfil: user.pontuacaoPerfil,
     };
   }
 

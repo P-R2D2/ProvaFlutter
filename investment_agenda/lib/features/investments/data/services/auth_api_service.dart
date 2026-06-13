@@ -22,7 +22,7 @@ class AuthApiService {
     final message = body['message'];
     throw AuthException(
       message is List<dynamic>
-          ? (message).join(', ')
+          ? (message).join('\n')
           : message?.toString() ?? 'Erro ao fazer login',
     );
   }
@@ -40,7 +40,7 @@ class AuthApiService {
     final message = body['message'];
     throw AuthException(
       message is List<dynamic>
-          ? (message).join(', ')
+          ? (message).join('\n')
           : message?.toString() ?? 'Erro ao cadastrar',
     );
   }
