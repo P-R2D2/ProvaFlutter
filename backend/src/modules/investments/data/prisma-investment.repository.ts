@@ -68,7 +68,6 @@ export class PrismaInvestmentRepository implements InvestmentRepository {
         portfolioId,
         assetSymbol: {
           equals: assetSymbol,
-          mode: 'insensitive',
         },
       },
     });

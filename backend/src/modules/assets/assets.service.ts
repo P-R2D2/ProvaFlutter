@@ -51,7 +51,7 @@ export class AssetsService {
         const token = process.env.BRAPI_API_TOKEN;
         const url = `https://brapi.dev/api/quote/list?search=${encodeURIComponent(query)}&token=${token}`;
 
-        const response = await firstValueFrom(this.httpService.get(url));
+        const response = await firstValueFrom(this.httpService.get<any>(url));
         const stocks = response.data?.stocks || [];
 
         results = stocks.map((item: any) => ({
@@ -109,7 +109,7 @@ export class AssetsService {
         const token = process.env.BRAPI_API_TOKEN;
         const url = `https://brapi.dev/api/quote/${uppercaseTicker}?token=${token}`;
 
-        const response = await firstValueFrom(this.httpService.get(url));
+        const response = await firstValueFrom(this.httpService.get<any>(url));
         const result = response.data?.results?.[0];
 
         if (!result) {

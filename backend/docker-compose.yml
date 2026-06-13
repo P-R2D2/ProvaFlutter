@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: prova_flutter_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: investments
+    ports:
+      - "5555:5432"
+    volumes:
+      - prova_flutter_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  prova_flutter_data:

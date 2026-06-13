@@ -21,7 +21,7 @@ REGRA DE ENCERRAMENTO: Ao receber a resposta da 7ª pergunta, você NÃO DEVE en
     private readonly usersService: UsersService,
   ) {
     this.openai = new OpenAI({
-      apiKey: this.configService.get<string>('OPENAI_API_KEY'),
+      apiKey: this.configService.get<string>('OPENAI_API_KEY') || process.env.OPENAI_API_KEY || 'sk-dummy-key-for-local-development',
     });
   }
 

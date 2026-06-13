@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/services/auth_api_service.dart';
-
 class AuthProvider extends ChangeNotifier {
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
@@ -100,11 +100,11 @@ class AuthProvider extends ChangeNotifier {
           await prefs.setBool(_entrevistaKey, result.entrevistaConcluida);
 
           if (result.perfilInvestidor != null) {
-            await prefs.setString(_perfilKey, result.perfilInvestidor);
+            await prefs.setString(_perfilKey, result.perfilInvestidor!);
           }
 
           if (result.pontuacaoPerfil != null) {
-            await prefs.setInt(_pontuacaoKey, result.pontuacaoPerfil);
+            await prefs.setInt(_pontuacaoKey, result.pontuacaoPerfil!);
           }
 
           return null;
@@ -191,7 +191,6 @@ class AuthProvider extends ChangeNotifier {
     _showProfileModal = false;
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
     await prefs.remove(_entrevistaKey);
     await prefs.remove(_perfilKey);
     await prefs.remove(_pontuacaoKey);

@@ -21,6 +21,9 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      
+      context.read<InvestmentProvider>().loadInvestments();
+      
       final authProvider = context.read<AuthProvider>();
       if (authProvider.showProfileModal) {
         authProvider.clearProfileModal();
@@ -133,19 +136,6 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         );
       }
-    });
-  }
-
-  @override
-  State<DashboardPage> createState() => _DashboardPageState();
-}
-
-class _DashboardPageState extends State<DashboardPage> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<InvestmentProvider>().loadInvestments();
     });
   }
 

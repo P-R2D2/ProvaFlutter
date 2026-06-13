@@ -17,7 +17,7 @@ export class AuthService {
     return require('crypto').createHash('sha256').update(token).digest('hex');
   }
 
-  private async generateTokenPair(user: { id: string; email: string }): Promise<AuthToken> {
+  private async generateTokenPair(user: { id: string; email: string }): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = { sub: user.id, email: user.email };
 
     const accessToken = this.jwtService.sign(payload, {
@@ -94,7 +94,13 @@ export class AuthService {
     user.refreshTokenHash = await bcrypt.hash(this.hashToken(tokenPair.refreshToken), saltRounds);
     await this.usersService.update(user);
 
-    return tokenPair;
+    return {
+      accessToken: tokenPair.accessToken,
+      refreshToken: tokenPair.refreshToken,
+      entrevistaConcluida: user.entrevistaConcluida,
+      perfilInvestidor: user.perfilInvestidor,
+      pontuacaoPerfil: user.pontuacaoPerfil,
+    };
   }
 
   async logout(userId: string): Promise<void> {
