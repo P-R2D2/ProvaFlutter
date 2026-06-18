@@ -41,7 +41,7 @@
 - [ ] VIII. Backend Modular Structure: Are modules (Auth, Users, Portfolios, Investments) modular and isolated in NestJS?
 - [ ] IX. Backend Persistence & ORM: Does the backend use PostgreSQL with Prisma ORM, keeping business logic strictly separated?
 - [ ] X. Future Financial Integrations: Are external integrations decoupled via adapters/gateways defined in the Domain layer?
-
+- [ ] XI. Robust AI Integrations: Are external AI integrations using robust parsing and handling errors gracefully?
 
 ## Project Structure
 

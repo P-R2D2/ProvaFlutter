@@ -1,13 +1,9 @@
 <!--
 Sync Impact Report:
-- Version change: 1.1.0 -> 1.2.0
-- List of modified principles:
-    - [V. Data Abstraction (Repository Pattern)] -> [V. Data Abstraction & Repository Pattern] (Generalized to cover database abstraction policies)
-    - [VII. Backend Modules & Security] -> [VII. Backend Modules & Security] (Updated required modules list to include Portfolios and Investments)
-    - [VIII. Backend Data Abstraction] -> [VIII. Backend Data Abstraction & Persistence] (Updated to mandate PostgreSQL and Prisma ORM, and separation of business logic)
+- Version change: 1.2.0 -> 1.3.0
+- List of modified principles: None
 - Added sections:
-    - IX. Core Entities & Relationships
-    - X. Future Financial Integrations
+    - XI. Robust AI & External Integrations
 - Removed sections: None
 - Templates requiring updates: 
     - .specify/templates/plan-template.md (✅ updated)
@@ -77,13 +73,18 @@ The backend database schema and domain models MUST define the following entities
 - **Integration Readiness**: The backend architecture MUST prepare for future financial integrations (e.g., brokerage APIs, real-time market data providers, banking APIs).
 - **Decoupling Gateways**: All financial integration adapters, API clients, and data parsers MUST implement interfaces defined in the Domain layer to allow swapping providers without modifying core business logic.
 
+### XI. Robust AI & External Integrations
+- **Resilient Parsing**: Integrations with non-deterministic APIs (like LLMs) MUST employ robust parsing mechanisms (e.g., regex extraction for JSON) to handle unexpected outputs or conversational text wrapping.
+- **Fail-Safe Operation**: Unstructured data failures MUST NOT crash the application nor silently fail. They must be caught, logged, and gracefully degrade the user experience.
+- **Secrets Management**: API keys and external secrets MUST be injected via environment variables and NEVER hardcoded in the source code.
+
 ## Code Quality & Scalability
 
-### XI. Meaningful Naming & DRY
+### XII. Meaningful Naming & DRY
 - **Meaningful Naming**: Use descriptive, intention-revealing names for all variables, classes, and functions.
 - **DRY (Don't Repeat Yourself)**: Abstract common logic into reusable modules or utilities.
 
-### XII. Layer-First Implementation & Testing
+### XIII. Layer-First Implementation & Testing
 - **Layer-First Implementation**: When building a feature, start with the Domain (Entities/Interfaces) -> Data (Implementation) -> Presentation/Controllers.
 - **Unit Testing**: Business logic in the Domain/Service layer should be unit testable with a high coverage goal.
 
@@ -92,4 +93,4 @@ The backend database schema and domain models MUST define the following entities
 - **Amendment**: Any changes to these principles require a minor version bump and an update to the `plan-template.md` gates.
 - **Compliance**: Every implementation plan MUST include a "Constitution Check" ensuring adherence to the layers and patterns defined here.
 
-**Version**: 1.2.0 | **Ratified**: 2026-04-21 | **Last Amended**: 2026-06-10
+**Version**: 1.3.0 | **Ratified**: 2026-04-21 | **Last Amended**: 2026-06-18
