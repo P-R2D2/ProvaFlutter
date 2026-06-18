@@ -34,15 +34,16 @@ model Portfolio {
 }
 
 model Investment {
-  id                   String    @id @default(uuid())
-  assetSymbol          String
-  assetName            String
-  quantity             Float
-  averagePurchasePrice Float
-  portfolioId          String
-  portfolio            Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id            String    @id @default(uuid())
+  name          String
+  assetType     String
+  quantity      Float
+  purchasePrice Float
+  purchaseDate  DateTime
+  portfolioId   String
+  portfolio     Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@map("investments")
 }

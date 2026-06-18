@@ -5,4 +5,5 @@ export class Portfolio {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
+  investments?: any[];
 }

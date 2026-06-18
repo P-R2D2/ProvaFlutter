@@ -10,6 +10,7 @@ export class PrismaPortfolioRepository implements PortfolioRepository {
   async findById(id: string): Promise<Portfolio | null> {
     return this.prisma.portfolio.findUnique({
       where: { id },
+      include: { investments: true },
     });
   }
 
@@ -28,6 +29,7 @@ export class PrismaPortfolioRepository implements PortfolioRepository {
     return this.prisma.portfolio.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
+      include: { investments: true },
     });
   }
 

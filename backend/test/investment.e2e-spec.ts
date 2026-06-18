@@ -83,17 +83,19 @@ describe('InvestmentController (e2e)', () => {
         .post(`/portfolios/${portfolio1Id}/investments`)
         .set('Authorization', `Bearer ${token1}`)
         .send({
-          assetSymbol: 'PETR4',
-          assetName: 'Petróleo Brasileiro S.A.',
+          name: 'PETR4',
+          assetType: 'STOCK',
           quantity: 10,
-          averagePurchasePrice: 30,
+          purchasePrice: 30,
+          purchaseDate: new Date().toISOString(),
+          portfolioId: portfolio1Id,
         })
         .expect(201);
 
       expect(response.body).toHaveProperty('id');
-      expect(response.body.assetSymbol).toBe('PETR4');
+      expect(response.body.name).toBe('PETR4');
       expect(response.body.quantity).toBe(10);
-      expect(response.body.averagePurchasePrice).toBe(30);
+      expect(response.body.purchasePrice).toBe(30);
     });
 
     it('should block non-owners from adding investments', async () => {
@@ -101,29 +103,14 @@ describe('InvestmentController (e2e)', () => {
         .post(`/portfolios/${portfolio1Id}/investments`)
         .set('Authorization', `Bearer ${token2}`)
         .send({
-          assetSymbol: 'VALE3',
-          assetName: 'Vale S.A.',
+          name: 'VALE3',
+          assetType: 'STOCK',
           quantity: 20,
-          averagePurchasePrice: 60,
+          purchasePrice: 60,
+          purchaseDate: new Date().toISOString(),
+          portfolioId: portfolio1Id,
         })
         .expect(403);
-    });
-
-    it('should average existing position if adding the same symbol', async () => {
-      const response = await request(app.getHttpServer())
-        .post(`/portfolios/${portfolio1Id}/investments`)
-        .set('Authorization', `Bearer ${token1}`)
-        .send({
-          assetSymbol: 'PETR4',
-          assetName: 'Petróleo Brasileiro S.A.',
-          quantity: 10,
-          averagePurchasePrice: 40,
-        })
-        .expect(201);
-
-      // (10 * 30 + 10 * 40) / 20 = 35.00
-      expect(response.body.quantity).toBe(20);
-      expect(response.body.averagePurchasePrice).toBe(35);
     });
   });
 
@@ -135,7 +122,7 @@ describe('InvestmentController (e2e)', () => {
         .expect(200);
 
       expect(response.body.length).toBe(1);
-      expect(response.body[0].assetSymbol).toBe('PETR4');
+      expect(response.body[0].name).toBe('PETR4');
     });
 
     it('should block non-owners from listing investments', async () => {
@@ -204,10 +191,11 @@ describe('InvestmentController (e2e)', () => {
       // Create new investment
       const tempInvestment = await prisma.investment.create({
         data: {
-          assetSymbol: 'VALE3',
-          assetName: 'Vale S.A.',
+          name: 'VALE3',
+          assetType: 'STOCK',
           quantity: 10,
-          averagePurchasePrice: 50,
+          purchasePrice: 50,
+          purchaseDate: new Date(),
           portfolioId: portfolio2Id,
         },
       });

@@ -1,13 +1,30 @@
-import { IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { IsString, IsNumber, IsPositive, Min, MaxLength, IsDateString, IsOptional, IsUUID } from 'class-validator';
 
 export class UpdateInvestmentDto {
-  @IsNumber({}, { message: 'quantity must be a number' })
-  @IsPositive({ message: 'quantity must be a positive number' })
+  @IsString()
+  @MaxLength(100)
+  @IsOptional()
+  name?: string;
+
+  @IsString()
+  @IsOptional()
+  assetType?: string;
+
+  @IsNumber()
+  @IsPositive({ message: 'A quantidade deve ser maior que zero' })
   @IsOptional()
   quantity?: number;
 
-  @IsNumber({}, { message: 'averagePurchasePrice must be a number' })
-  @IsPositive({ message: 'averagePurchasePrice must be a positive number' })
+  @IsNumber()
+  @Min(0, { message: 'O preço de compra não pode ser negativo' })
   @IsOptional()
-  averagePurchasePrice?: number;
+  purchasePrice?: number;
+
+  @IsDateString()
+  @IsOptional()
+  purchaseDate?: string;
+
+  @IsUUID()
+  @IsOptional()
+  portfolioId?: string;
 }

@@ -8,48 +8,26 @@ export class PrismaInvestmentRepository implements InvestmentRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findById(id: string): Promise<Investment | null> {
-    return this.prisma.investment.findUnique({
-      where: { id },
-    });
+    return this.prisma.investment.findUnique({ where: { id } });
   }
 
   async findByPortfolio(portfolioId: string): Promise<Investment[]> {
-    return this.prisma.investment.findMany({
-      where: { portfolioId },
-      orderBy: { assetSymbol: 'asc' },
-    });
+    return this.prisma.investment.findMany({ where: { portfolioId } });
   }
 
   async findByUser(userId: string): Promise<Investment[]> {
     return this.prisma.investment.findMany({
       where: {
-        portfolio: {
-          userId,
-        },
+        portfolio: { userId },
       },
-      orderBy: { assetSymbol: 'asc' },
     });
   }
 
-  async create(data: {
-    assetSymbol: string;
-    assetName: string;
-    quantity: number;
-    averagePurchasePrice: number;
-    portfolioId: string;
-  }): Promise<Investment> {
-    return this.prisma.investment.create({
-      data,
-    });
+  async create(data: Omit<Investment, 'id' | 'createdAt' | 'updatedAt'>): Promise<Investment> {
+    return this.prisma.investment.create({ data });
   }
 
-  async update(
-    id: string,
-    data: {
-      quantity?: number;
-      averagePurchasePrice?: number;
-    },
-  ): Promise<Investment> {
+  async update(id: string, data: Partial<Omit<Investment, 'id' | 'createdAt' | 'updatedAt' | 'portfolioId'>>): Promise<Investment> {
     return this.prisma.investment.update({
       where: { id },
       data,
@@ -57,19 +35,12 @@ export class PrismaInvestmentRepository implements InvestmentRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.investment.delete({
-      where: { id },
-    });
+    await this.prisma.investment.delete({ where: { id } });
   }
 
-  async findByPortfolioAndSymbol(portfolioId: string, assetSymbol: string): Promise<Investment | null> {
+  async findByPortfolioAndName(portfolioId: string, name: string): Promise<Investment | null> {
     return this.prisma.investment.findFirst({
-      where: {
-        portfolioId,
-        assetSymbol: {
-          equals: assetSymbol,
-        },
-      },
+      where: { portfolioId, name },
     });
   }
 }

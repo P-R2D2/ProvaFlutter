@@ -1,9 +1,10 @@
-export class Investment {
+export interface Investment {
   id: string;
-  assetSymbol: string;
-  assetName: string;
+  name: string;
+  assetType: string;
   quantity: number;
-  averagePurchasePrice: number;
+  purchasePrice: number;
+  purchaseDate: Date;
   portfolioId: string;
   createdAt: Date;
   updatedAt: Date;

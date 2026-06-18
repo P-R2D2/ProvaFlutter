@@ -1,9 +1,9 @@
-export class PortfolioPositionDto {
+export class PositionValuationDto {
   id: string;
-  symbol: string;
   name: string;
+  assetType: string;
   quantity: number;
-  averagePurchasePrice: number;
+  purchasePrice: number;
   currentMarketPrice: number;
   investedAmount: number;
   currentPositionValue: number;
@@ -12,15 +12,13 @@ export class PortfolioPositionDto {
   isDelayed: boolean;
 }
 
-export class PortfolioSummaryDto {
-  totalInvested: number;
-  totalCurrentValue: number;
-  totalProfitLoss: number;
-  totalReturnPercentage: number;
-  isDelayed: boolean;
-}
-
 export class PortfolioValuationDto {
-  summary: PortfolioSummaryDto;
-  positions: PortfolioPositionDto[];
+  summary: {
+    totalInvested: number;
+    totalCurrentValue: number;
+    totalProfitLoss: number;
+    totalReturnPercentage: number;
+    isDelayed: boolean;
+  };
+  positions: PositionValuationDto[];
 }

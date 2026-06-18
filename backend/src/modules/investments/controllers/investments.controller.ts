@@ -23,34 +23,16 @@ export class InvestmentsController {
     return this.investmentsService.getPortfolioValuation(userId);
   }
 
-  @Post('api/investments')
-  async createDefault(@Request() req: any, @Body() body: any) {
+  @Post('investments')
+  async createDefaultRoot(@Request() req: any, @Body() dto: CreateInvestmentDto) {
+    // Just delegating the root /investments to the service method directly 
+    // since the portfolioId is inside the DTO now.
     const userId = req.user.id;
-
-    let portfolio = await this.prisma.portfolio.findFirst({
-      where: { userId },
-    });
-
-    if (!portfolio) {
-      portfolio = await this.prisma.portfolio.create({
-        data: {
-          name: 'Default Portfolio',
-          userId,
-        },
-      });
+    const portfolio = await this.prisma.portfolio.findUnique({ where: { id: dto.portfolioId } });
+    if (!portfolio || portfolio.userId !== userId) {
+      throw new Error('Portfolio access denied or not found');
     }
-
-    const assetSymbol = (body.symbol || body.assetSymbol || '').toUpperCase();
-    const assetName = body.assetName || body.name || assetSymbol;
-    const quantity = Number(body.quantity);
-    const averagePurchasePrice = Number(body.averagePurchasePrice);
-
-    return this.investmentsService.create(portfolio.id, {
-      assetSymbol,
-      assetName,
-      quantity,
-      averagePurchasePrice,
-    });
+    return this.investmentsService.create(dto.portfolioId, dto);
   }
 
   @UseGuards(OwnershipGuard)

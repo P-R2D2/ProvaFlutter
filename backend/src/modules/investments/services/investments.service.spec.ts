@@ -3,20 +3,26 @@ import { NotFoundException } from '@nestjs/common';
 import { InvestmentsService } from './investments.service';
 import { INVESTMENT_REPOSITORY } from '../domain/investment.repository.interface';
 import { AssetsService } from '../../assets/assets.service';
+import { PrismaService } from '../../../prisma.service';
 
 describe('InvestmentsService', () => {
   let service: InvestmentsService;
   let repo: any;
   let assetsService: AssetsService;
+  let prisma: any;
 
-  const mockInvestmentRepository = {
-    findById: jest.fn(),
-    findByPortfolio: jest.fn(),
-    findByUser: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    findByPortfolioAndSymbol: jest.fn(),
+  const mockPrismaService = {
+    investment: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      findFirst: jest.fn(),
+    },
+    portfolio: {
+      findMany: jest.fn(),
+    }
   };
 
   const mockAssetsService = {
@@ -28,74 +34,65 @@ describe('InvestmentsService', () => {
       providers: [
         InvestmentsService,
         {
-          provide: INVESTMENT_REPOSITORY,
-          useValue: mockInvestmentRepository,
+          provide: PrismaService,
+          useValue: mockPrismaService,
         },
         {
           provide: AssetsService,
           useValue: mockAssetsService,
         },
+        // Kept for backward compatibility if needed, though we use PrismaService directly now
+        {
+          provide: INVESTMENT_REPOSITORY,
+          useValue: {},
+        }
       ],
     }).compile();
 
     service = module.get<InvestmentsService>(InvestmentsService);
-    repo = module.get<any>(INVESTMENT_REPOSITORY);
+    prisma = module.get<PrismaService>(PrismaService);
     assetsService = module.get<AssetsService>(AssetsService);
 
     jest.clearAllMocks();
   });
 
   describe('create', () => {
-    it('should create a new investment position if it does not exist', async () => {
-      const dto = { assetSymbol: 'petr4', assetName: 'Petrobras', quantity: 10, averagePurchasePrice: 30 };
+    it('should create a new investment position', async () => {
+      const dto = { name: 'PETR4', assetType: 'STOCK', quantity: 10, purchasePrice: 30, purchaseDate: '2023-01-01T00:00:00.000Z', portfolioId: 'portfolio1' };
       mockAssetsService.getDetails.mockResolvedValue({ currentPrice: 35, name: 'Petrobras' });
-      repo.findByPortfolioAndSymbol.mockResolvedValue(null);
-      repo.create.mockResolvedValue({ id: 'id1', ...dto, assetSymbol: 'PETR4', portfolioId: 'portfolio1' });
+      mockPrismaService.investment.create.mockResolvedValue({ id: 'id1', ...dto, portfolioId: 'portfolio1' });
 
       const result = await service.create('portfolio1', dto);
 
       expect(assetsService.getDetails).toHaveBeenCalledWith('PETR4');
-      expect(repo.findByPortfolioAndSymbol).toHaveBeenCalledWith('portfolio1', 'PETR4');
-      expect(repo.create).toHaveBeenCalledWith({
-        assetSymbol: 'PETR4',
-        assetName: 'Petrobras',
-        quantity: 10,
-        averagePurchasePrice: 30,
-        portfolioId: 'portfolio1',
+      expect(mockPrismaService.investment.create).toHaveBeenCalledWith({
+        data: {
+          name: 'PETR4',
+          assetType: 'STOCK',
+          quantity: 10,
+          purchasePrice: 30,
+          purchaseDate: new Date('2023-01-01T00:00:00.000Z'),
+          portfolioId: 'portfolio1',
+        }
       });
-      expect(result.assetSymbol).toBe('PETR4');
-    });
-
-    it('should update and average an existing position', async () => {
-      const dto = { assetSymbol: 'PETR4', assetName: 'Petrobras', quantity: 15, averagePurchasePrice: 28 };
-      const existing = { id: 'id1', portfolioId: 'portfolio1', assetSymbol: 'PETR4', quantity: 10, averagePurchasePrice: 30 };
-      mockAssetsService.getDetails.mockResolvedValue({ currentPrice: 35, name: 'Petrobras' });
-      repo.findByPortfolioAndSymbol.mockResolvedValue(existing);
-      repo.update.mockResolvedValue({ ...existing, quantity: 25, averagePurchasePrice: 28.8 });
-
-      await service.create('portfolio1', dto);
-
-      expect(repo.update).toHaveBeenCalledWith('id1', {
-        quantity: 25,
-        averagePurchasePrice: 28.8,
-      });
+      expect(result.name).toBe('PETR4');
     });
   });
 
   describe('delete', () => {
     it('should remove position successfully', async () => {
-      const existing = { id: 'id1', portfolioId: 'portfolio1', assetSymbol: 'PETR4' };
-      repo.findById.mockResolvedValue(existing);
-      repo.delete.mockResolvedValue(undefined);
+      const existing = { id: 'id1', portfolioId: 'portfolio1', name: 'PETR4' };
+      mockPrismaService.investment.findUnique.mockResolvedValue(existing);
+      mockPrismaService.investment.delete.mockResolvedValue(undefined);
 
       await service.delete('id1');
 
-      expect(repo.findById).toHaveBeenCalledWith('id1');
-      expect(repo.delete).toHaveBeenCalledWith('id1');
+      expect(mockPrismaService.investment.findUnique).toHaveBeenCalledWith({ where: { id: 'id1' } });
+      expect(mockPrismaService.investment.delete).toHaveBeenCalledWith({ where: { id: 'id1' } });
     });
 
     it('should throw NotFoundException if position missing', async () => {
-      repo.findById.mockResolvedValue(null);
+      mockPrismaService.investment.findUnique.mockResolvedValue(null);
 
       await expect(service.delete('id1')).rejects.toThrow(NotFoundException);
     });
@@ -103,11 +100,15 @@ describe('InvestmentsService', () => {
 
   describe('getPortfolioValuation', () => {
     it('should return aggregated valuation with exact two decimals precision', async () => {
-      const investments = [
-        { id: 'id1', assetSymbol: 'PETR4', assetName: 'Petrobras', quantity: 10, averagePurchasePrice: 30 },
-        { id: 'id2', assetSymbol: 'VALE3', assetName: 'Vale', quantity: 5, averagePurchasePrice: 60 },
-      ];
-      repo.findByUser.mockResolvedValue(investments);
+      const portfolios = [{
+        id: 'portfolio1',
+        userId: 'user1',
+        investments: [
+          { id: 'id1', name: 'PETR4', assetType: 'STOCK', quantity: 10, purchasePrice: 30 },
+          { id: 'id2', name: 'VALE3', assetType: 'STOCK', quantity: 5, purchasePrice: 60 },
+        ]
+      }];
+      mockPrismaService.portfolio.findMany.mockResolvedValue(portfolios);
       mockAssetsService.getDetails.mockImplementation(async (symbol) => {
         if (symbol === 'PETR4') return { currentPrice: 35.555, name: 'Petrobras' };
         if (symbol === 'VALE3') return { currentPrice: 58.213, name: 'Vale' };
@@ -115,16 +116,10 @@ describe('InvestmentsService', () => {
 
       const valuation = await service.getPortfolioValuation('user1');
 
-      // PETR4:
-      // invested = 10 * 30 = 300.00
-      // value = 10 * 35.555 = 355.55
-      // profitLoss = 355.55 - 300 = 55.55
-      // profitLoss% = (55.55 / 300) * 100 = 18.52%
       expect(valuation.positions[0].investedAmount).toBe(300);
       expect(valuation.positions[0].currentPositionValue).toBe(355.55);
       expect(valuation.positions[0].profitLossPercentage).toBe(18.52);
 
-      // Total return check
       expect(valuation.summary.totalInvested).toBe(600);
       expect(valuation.summary.totalCurrentValue).toBe(646.61);
       expect(valuation.summary.totalProfitLoss).toBe(46.61);
@@ -132,13 +127,19 @@ describe('InvestmentsService', () => {
     });
 
     it('should handle API outage fallback gracefully and flag delay', async () => {
-      const investments = [{ id: 'id1', assetSymbol: 'PETR4', assetName: 'Petrobras', quantity: 10, averagePurchasePrice: 30 }];
-      repo.findByUser.mockResolvedValue(investments);
+      const portfolios = [{
+        id: 'portfolio1',
+        userId: 'user1',
+        investments: [
+          { id: 'id1', name: 'PETR4', assetType: 'STOCK', quantity: 10, purchasePrice: 30 }
+        ]
+      }];
+      mockPrismaService.portfolio.findMany.mockResolvedValue(portfolios);
       mockAssetsService.getDetails.mockRejectedValue(new Error('API Out of Service'));
 
       const valuation = await service.getPortfolioValuation('user1');
 
-      expect(valuation.positions[0].currentMarketPrice).toBe(30); // fallback to purchase price
+      expect(valuation.positions[0].currentMarketPrice).toBe(30);
       expect(valuation.positions[0].isDelayed).toBe(true);
       expect(valuation.summary.isDelayed).toBe(true);
     });

@@ -1,7 +1,5 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { INVESTMENT_REPOSITORY } from '../domain/investment.repository.interface';
-import type { InvestmentRepository } from '../domain/investment.repository.interface';
-import { Investment } from '../domain/investment.entity';
+import { Injectable, Inject, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { PrismaService } from '../../../prisma.service';
 import { CreateInvestmentDto } from '../dtos/create-investment.dto';
 import { UpdateInvestmentDto } from '../dtos/update-investment.dto';
 import { AssetsService } from '../../assets/assets.service';
@@ -9,8 +7,7 @@ import { AssetsService } from '../../assets/assets.service';
 @Injectable()
 export class InvestmentsService {
   constructor(
-    @Inject(INVESTMENT_REPOSITORY)
-    private readonly investmentRepository: InvestmentRepository,
+    private readonly prisma: PrismaService,
     private readonly assetsService: AssetsService,
   ) {}
 
@@ -18,76 +15,82 @@ export class InvestmentsService {
     return Number(value.toFixed(2));
   }
 
-  async findById(id: string): Promise<Investment> {
-    const investment = await this.investmentRepository.findById(id);
+  async findById(id: string) {
+    const investment = await this.prisma.investment.findUnique({ where: { id } });
     if (!investment) {
       throw new NotFoundException(`Investment with ID '${id}' not found`);
     }
     return investment;
   }
 
-  async findByPortfolio(portfolioId: string): Promise<Investment[]> {
-    return this.investmentRepository.findByPortfolio(portfolioId);
+  async findByPortfolio(portfolioId: string) {
+    return this.prisma.investment.findMany({ where: { portfolioId } });
   }
 
-  async create(portfolioId: string, dto: CreateInvestmentDto): Promise<Investment> {
-    const uppercaseSymbol = dto.assetSymbol.toUpperCase();
-
+  async create(portfolioId: string, dto: CreateInvestmentDto) {
+    // Basic verification just to ensure it doesn't crash if assetsService is called.
     try {
-      await this.assetsService.getDetails(uppercaseSymbol);
+      if (dto.assetType === 'STOCK') {
+        await this.assetsService.getDetails(dto.name);
+      }
     } catch (error) {
-      // If verification fails but we still want to save, proceed
+      // Ignore
     }
 
-    const existing = await this.investmentRepository.findByPortfolioAndSymbol(portfolioId, uppercaseSymbol);
-    if (existing) {
-      const newQuantity = existing.quantity + dto.quantity;
-      const newAveragePrice =
-        (existing.quantity * existing.averagePurchasePrice + dto.quantity * dto.averagePurchasePrice) / newQuantity;
-
-      return this.investmentRepository.update(existing.id, {
-        quantity: newQuantity,
-        averagePurchasePrice: this.roundToTwo(newAveragePrice),
-      });
-    }
-
-    return this.investmentRepository.create({
-      assetSymbol: uppercaseSymbol,
-      assetName: dto.assetName,
-      quantity: dto.quantity,
-      averagePurchasePrice: dto.averagePurchasePrice,
-      portfolioId,
+    return this.prisma.investment.create({
+      data: {
+        name: dto.name,
+        assetType: dto.assetType,
+        quantity: dto.quantity,
+        purchasePrice: dto.purchasePrice,
+        purchaseDate: new Date(dto.purchaseDate),
+        portfolioId: portfolioId,
+      },
     });
   }
 
-  async update(id: string, dto: UpdateInvestmentDto): Promise<Investment> {
+  async update(id: string, dto: UpdateInvestmentDto) {
     await this.findById(id);
-    return this.investmentRepository.update(id, dto);
+    return this.prisma.investment.update({
+      where: { id },
+      data: {
+        name: dto.name,
+        assetType: dto.assetType,
+        quantity: dto.quantity,
+        purchasePrice: dto.purchasePrice,
+        purchaseDate: dto.purchaseDate ? new Date(dto.purchaseDate) : undefined,
+      },
+    });
   }
 
   async delete(id: string): Promise<void> {
     await this.findById(id);
-    await this.investmentRepository.delete(id);
+    await this.prisma.investment.delete({ where: { id } });
   }
 
-  async getPortfolioValuation(userId: string): Promise<any> {
-    const investments = await this.investmentRepository.findByUser(userId);
+  async getPortfolioValuation(userId: string) {
+    const portfolios = await this.prisma.portfolio.findMany({
+      where: { userId },
+      include: { investments: true }
+    });
+
+    const investments = portfolios.flatMap(p => p.investments);
 
     const positions = await Promise.all(
       investments.map(async (investment) => {
-        let currentPrice = investment.averagePurchasePrice;
+        let currentPrice = investment.purchasePrice;
         let isDelayed = false;
-        let assetName = investment.assetName;
 
-        try {
-          const details = await this.assetsService.getDetails(investment.assetSymbol);
-          currentPrice = details.currentPrice;
-          assetName = details.name;
-        } catch (error) {
-          isDelayed = true;
+        if (investment.assetType === 'STOCK') {
+          try {
+            const details = await this.assetsService.getDetails(investment.name);
+            currentPrice = details.currentPrice;
+          } catch (error) {
+            isDelayed = true;
+          }
         }
 
-        const investedAmount = investment.quantity * investment.averagePurchasePrice;
+        const investedAmount = investment.quantity * investment.purchasePrice;
         const currentPositionValue = investment.quantity * currentPrice;
         const profitLoss = currentPositionValue - investedAmount;
         const profitLossPercentage = investedAmount > 0 
@@ -96,10 +99,11 @@ export class InvestmentsService {
 
         return {
           id: investment.id,
-          symbol: investment.assetSymbol,
-          name: assetName,
+          name: investment.name,
+          assetType: investment.assetType,
           quantity: investment.quantity,
-          averagePurchasePrice: investment.averagePurchasePrice,
+          purchasePrice: investment.purchasePrice,
+          purchaseDate: investment.purchaseDate,
           currentMarketPrice: currentPrice,
           investedAmount: this.roundToTwo(investedAmount),
           currentPositionValue: this.roundToTwo(currentPositionValue),

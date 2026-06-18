@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import { IsString, IsNumber, IsPositive, IsOptional, MaxLength } from 'class-validator';
 
 export class RegisterPositionDto {
   @IsString()
-  @IsNotEmpty()
-  symbol: string;
+  @MaxLength(100)
+  name: string;
 
   @IsNumber()
   @IsPositive()
@@ -11,5 +11,5 @@ export class RegisterPositionDto {
 
   @IsNumber()
   @IsPositive()
-  averagePurchasePrice: number;
+  purchasePrice: number;
 }
