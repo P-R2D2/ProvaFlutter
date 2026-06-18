@@ -41,9 +41,22 @@ REGRA DE ENCERRAMENTO: Ao receber a resposta da 7ª pergunta, você NÃO DEVE en
       const replyContent = response.choices[0]?.message?.content || '';
 
       // Tentar fazer o parse caso a resposta seja o JSON final
+      let parsed: any = null;
       try {
-        const parsed = JSON.parse(replyContent);
-        if (parsed.finalizado) {
+        // Extrai apenas a parte que parece um JSON usando regex
+        const jsonMatch = replyContent.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[0]);
+        } else {
+          const cleanContent = replyContent.replace(/```json/gi, '').replace(/```/g, '').trim();
+          parsed = JSON.parse(cleanContent);
+        }
+      } catch (e) {
+        // Não é JSON ou falhou no parse, segue o fluxo normal
+      }
+
+      if (parsed && parsed.finalizado) {
+        try {
           const user = await this.usersService.findById(userId);
           if (user) {
             user.entrevistaConcluida = true;
@@ -53,14 +66,15 @@ REGRA DE ENCERRAMENTO: Ao receber a resposta da 7ª pergunta, você NÃO DEVE en
           }
           return {
             role: 'assistant',
-            content: parsed.mensagem_despedida,
+            content: parsed.mensagem_despedida || 'Entrevista finalizada.',
             finalizado: true,
             perfil: parsed.perfil,
             pontuacao: parsed.pontuacao,
           };
+        } catch (dbError) {
+          console.error('Erro ao salvar dados da entrevista:', dbError);
+          // Podemos retornar o json na mesma para o frontend, ou lidar de forma amigável
         }
-      } catch (e) {
-        // Não é JSON ou falhou no parse, segue o fluxo normal
       }
 
       return {

@@ -8,7 +8,7 @@ export class ChatController {
 
   @Post('porquinho')
   async chatPorquinho(@Request() req: any, @Body() body: ChatMessageDto) {
-    const userId = req.user?.userId || req.user?.sub;
+    const userId = req.user?.id || req.user?.userId || req.user?.sub;
     return this.chatService.processChat(userId, body);
   }
 }
