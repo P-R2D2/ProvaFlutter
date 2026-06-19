@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import '../../features/investments/presentation/pages/login_page.dart';
 import '../../features/investments/presentation/pages/register_page.dart';
-import '../../features/investments/presentation/pages/dashboard_page.dart';
+import '../../features/investments/presentation/pages/main_page.dart';
 import '../../features/investments/presentation/pages/investment_form_page.dart';
 import '../../features/investments/presentation/pages/onboarding_chat_page.dart';
 import '../../features/investments/presentation/providers/auth_provider.dart';
@@ -49,7 +49,7 @@ class AppRouter {
         ),
         GoRoute(
           path: '/',
-          builder: (context, state) => const DashboardPage(),
+          builder: (context, state) => const MainPage(),
         ),
         GoRoute(
           path: '/add',

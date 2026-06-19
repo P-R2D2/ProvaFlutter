@@ -13,6 +13,8 @@ import 'features/assets/domain/usecases/search_assets_usecase.dart';
 import 'features/assets/domain/usecases/get_asset_details_usecase.dart';
 import 'features/assets/data/repositories/assets_repository_impl.dart';
 import 'features/assets/data/datasources/assets_remote_data_source.dart';
+import 'features/portfolios/presentation/providers/portfolio_provider.dart';
+import 'features/portfolios/data/repositories/portfolio_repository_impl.dart';
 
 void main() {
   runApp(
@@ -62,6 +64,23 @@ void main() {
             );
           },
           update: (context, auth, assets) => assets!,
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, PortfolioProvider>(
+          create: (context) {
+            final client = context.read<AuthenticatedHttpClient>();
+            return PortfolioProvider(
+              repository: PortfolioRepositoryImpl(
+                client: client,
+                getToken: () async => context.read<AuthProvider>().currentToken ?? '',
+              ),
+            );
+          },
+          update: (context, auth, provider) {
+            if (auth.isAuthenticated && provider != null && provider.portfolios.isEmpty && !provider.isLoading) {
+              provider.fetchPortfolios();
+            }
+            return provider!;
+          },
         ),
       ],
       child: const MyApp(),

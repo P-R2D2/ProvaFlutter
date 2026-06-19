@@ -29,11 +29,14 @@ class InvestmentsRemoteDataSource {
 
   Future<void> registerPosition(
     String token,
+    String portfolioId,
     String symbol,
+    String assetType,
     double quantity,
-    double averagePurchasePrice,
+    double purchasePrice,
+    DateTime purchaseDate,
   ) async {
-    final uri = Uri.parse('$baseUrl/api/investments');
+    final uri = Uri.parse('$baseUrl/portfolios/$portfolioId/investments');
     final response = await client.post(
       uri,
       headers: {
@@ -41,9 +44,12 @@ class InvestmentsRemoteDataSource {
         'Authorization': 'Bearer $token',
       },
       body: jsonEncode({
-        'symbol': symbol,
+        'name': symbol, // Mapeando ticker para 'name'
+        'assetType': assetType,
         'quantity': quantity,
-        'averagePurchasePrice': averagePurchasePrice,
+        'purchasePrice': purchasePrice,
+        'purchaseDate': purchaseDate.toIso8601String(),
+        'portfolioId': portfolioId,
       }),
     );
 

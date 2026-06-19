@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../portfolios/domain/entities/portfolio_entity.dart';
 import '../../data/repositories/portfolio_repository_impl.dart';
@@ -30,12 +31,41 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
+  Future<PortfolioEntity?> createPortfolio(String name, [String? description]) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final newPortfolio = await repository.createPortfolio(name, description);
+      _portfolios.add(newPortfolio);
+      _isLoading = false;
+      notifyListeners();
+      return newPortfolio;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
   Future<bool> addInvestment(String portfolioId, Map<String, dynamic> data) async {
     // Ideally use InvestmentRepository, but since provider holds state, we do it here.
     try {
-      final apiClient = (repository as PortfolioRepositoryImpl).apiClient;
+      final repoImpl = repository as PortfolioRepositoryImpl;
+      final client = repoImpl.client;
+      final baseUrl = repoImpl.baseUrl;
+      final token = await repoImpl.getToken();
       data['portfolioId'] = portfolioId;
-      final response = await apiClient.post('/investments', data);
+      final response = await client.post(
+        Uri.parse('$baseUrl/portfolios/$portfolioId/investments'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(data),
+      );
       
       if (response.statusCode == 201) {
         // Refresh portfolios to get updated data

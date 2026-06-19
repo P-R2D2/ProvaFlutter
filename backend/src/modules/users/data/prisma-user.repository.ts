@@ -14,6 +14,9 @@ export class PrismaUserRepository implements UserRepository {
         email: user.email,
         passwordHash: user.passwordHash,
         refreshTokenHash: user.refreshTokenHash,
+        entrevistaConcluida: user.entrevistaConcluida,
+        perfilInvestidor: user.perfilInvestidor,
+        pontuacaoPerfil: user.pontuacaoPerfil,
       },
     });
     return this.mapToEntity(created);
@@ -40,6 +43,9 @@ export class PrismaUserRepository implements UserRepository {
         email: user.email,
         passwordHash: user.passwordHash,
         refreshTokenHash: user.refreshTokenHash,
+        entrevistaConcluida: user.entrevistaConcluida,
+        perfilInvestidor: user.perfilInvestidor,
+        pontuacaoPerfil: user.pontuacaoPerfil,
       },
     });
     return this.mapToEntity(updated);
@@ -51,6 +57,9 @@ export class PrismaUserRepository implements UserRepository {
     user.email = prismaUser.email;
     user.passwordHash = prismaUser.passwordHash;
     user.refreshTokenHash = prismaUser.refreshTokenHash;
+    user.entrevistaConcluida = prismaUser.entrevistaConcluida;
+    user.perfilInvestidor = prismaUser.perfilInvestidor;
+    user.pontuacaoPerfil = prismaUser.pontuacaoPerfil;
     return user;
   }
 }

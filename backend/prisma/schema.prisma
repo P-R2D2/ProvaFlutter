@@ -12,6 +12,9 @@ model User {
   email            String      @unique
   passwordHash     String
   refreshTokenHash String?
+  entrevistaConcluida Boolean @default(false)
+  perfilInvestidor    String?
+  pontuacaoPerfil     Int?
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   portfolios       Portfolio[]

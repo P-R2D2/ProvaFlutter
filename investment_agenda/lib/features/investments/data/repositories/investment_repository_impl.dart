@@ -32,16 +32,22 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
 
   @override
   Future<void> addInvestment(
+    String portfolioId,
     String symbol,
+    String assetType,
     double quantity,
-    double averagePurchasePrice,
+    double purchasePrice,
+    DateTime purchaseDate,
   ) async {
     final token = await getToken();
     await remoteDataSource.registerPosition(
       token,
+      portfolioId,
       symbol,
+      assetType,
       quantity,
-      averagePurchasePrice,
+      purchasePrice,
+      purchaseDate,
     );
   }
 

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/investment_provider.dart';
 import '../../domain/entities/investment.dart';
 import '../../../assets/presentation/providers/assets_provider.dart';
+import '../../../portfolios/presentation/providers/portfolio_provider.dart';
 
 class InvestmentFormPage extends StatefulWidget {
   final Investment? investment;
@@ -19,10 +20,24 @@ class _InvestmentFormPageState extends State<InvestmentFormPage> {
   late TextEditingController _symbolController;
   late TextEditingController _quantityController;
   late TextEditingController _priceController;
+  String? _selectedPortfolioId;
+  DateTime _purchaseDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<PortfolioProvider>().fetchPortfolios().then((_) {
+          final portfolios = context.read<PortfolioProvider>().portfolios;
+          if (portfolios.isNotEmpty && _selectedPortfolioId == null) {
+            setState(() {
+              _selectedPortfolioId = portfolios.first.id;
+            });
+          }
+        });
+      }
+    });
     _symbolController = TextEditingController(text: widget.investment?.symbol ?? '');
     _quantityController = TextEditingController(
         text: widget.investment?.quantity.toString() ?? '');
@@ -36,6 +51,40 @@ class _InvestmentFormPageState extends State<InvestmentFormPage> {
     _quantityController.dispose();
     _priceController.dispose();
     super.dispose();
+  }
+
+  void _showCreatePortfolioDialog() {
+    final nameController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Nova Carteira'),
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(labelText: 'Nome da Carteira'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameController.text.trim().isEmpty) return;
+              final provider = context.read<PortfolioProvider>();
+              final newPortfolio = await provider.createPortfolio(nameController.text.trim());
+              if (newPortfolio != null && mounted) {
+                setState(() {
+                  _selectedPortfolioId = newPortfolio.id;
+                });
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Criar'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAssetSearchBottomSheet() {
@@ -69,13 +118,27 @@ class _InvestmentFormPageState extends State<InvestmentFormPage> {
 
   void _save() async {
     if (_formKey.currentState!.validate()) {
+      if (_selectedPortfolioId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Por favor, selecione ou crie uma carteira')),
+        );
+        return;
+      }
+
       final provider = context.read<InvestmentProvider>();
       
       final symbol = _symbolController.text.trim().toUpperCase();
       final quantity = double.parse(_quantityController.text);
       final price = double.parse(_priceController.text);
 
-      final error = await provider.addInvestment(symbol, quantity, price);
+      final error = await provider.addInvestment(
+        _selectedPortfolioId!,
+        symbol,
+        'STOCK', // Sempre será STOCK nessa tela
+        quantity,
+        price,
+        _purchaseDate,
+      );
 
       if (mounted) {
         if (error != null) {
@@ -147,6 +210,40 @@ class _InvestmentFormPageState extends State<InvestmentFormPage> {
               ],
             ),
             const SizedBox(height: 20),
+            if (!isEditing) ...[
+              Consumer<PortfolioProvider>(
+                builder: (context, portfolioProvider, child) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: _selectedPortfolioId,
+                          decoration: const InputDecoration(labelText: 'Carteira'),
+                          items: portfolioProvider.portfolios.map((p) {
+                            return DropdownMenuItem(
+                              value: p.id,
+                              child: Text(p.name),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            setState(() => _selectedPortfolioId = val);
+                          },
+                          validator: (val) => val == null ? 'Selecione a carteira' : null,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.add_box),
+                        color: Theme.of(context).colorScheme.primary,
+                        onPressed: _showCreatePortfolioDialog,
+                        tooltip: 'Criar Carteira',
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
             TextFormField(
               controller: _quantityController,
               decoration: const InputDecoration(
@@ -178,6 +275,32 @@ class _InvestmentFormPageState extends State<InvestmentFormPage> {
                 return null;
               },
             ),
+            if (!isEditing) ...[
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Text(
+                    'Data de Compra: ${_purchaseDate.toLocal().toString().split(' ')[0]}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: _purchaseDate,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime.now(),
+                      );
+                      if (date != null) {
+                        setState(() => _purchaseDate = date);
+                      }
+                    },
+                    child: const Text('Alterar'),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 40),
             Consumer<InvestmentProvider>(
               builder: (context, provider, child) {

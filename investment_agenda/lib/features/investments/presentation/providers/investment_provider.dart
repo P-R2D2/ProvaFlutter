@@ -35,16 +35,19 @@ class InvestmentProvider extends ChangeNotifier {
   }
 
   Future<String?> addInvestment(
+    String portfolioId,
     String symbol,
+    String assetType,
     double quantity,
-    double averagePurchasePrice,
+    double purchasePrice,
+    DateTime purchaseDate,
   ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await repository.addInvestment(symbol, quantity, averagePurchasePrice);
+      await repository.addInvestment(portfolioId, symbol, assetType, quantity, purchasePrice, purchaseDate);
       await loadInvestments();
       return null;
     } catch (e) {

@@ -12,6 +12,6 @@ class PortfolioValuationData {
 
 abstract class InvestmentRepository {
   Future<PortfolioValuationData> getPortfolioValuation();
-  Future<void> addInvestment(String symbol, double quantity, double averagePurchasePrice);
+  Future<void> addInvestment(String portfolioId, String symbol, String assetType, double quantity, double purchasePrice, DateTime purchaseDate);
   Future<void> deleteInvestment(String id);
 }
