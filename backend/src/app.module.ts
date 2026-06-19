@@ -12,6 +12,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { User } from './modules/users/domain/user.entity';
 import { ConfigModule } from '@nestjs/config';
 import { ChatModule } from './modules/chat/chat.module';
+import { AdvisorModule } from './modules/advisor/advisor.module';
 import { PrismaService } from './prisma.service';
 
 @Module({
@@ -29,6 +30,7 @@ import { PrismaService } from './prisma.service';
     InvestmentsModule,
     PortfoliosModule,
     ChatModule,
+    AdvisorModule,
   ],
   controllers: [AppController],
   providers: [

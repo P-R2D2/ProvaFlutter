@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dashboard_page.dart';
 import '../../../portfolios/presentation/pages/portfolio_list_page.dart';
+import '../../../advisor/presentation/widgets/floating_chat_widget.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -20,9 +21,11 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
+      body: FloatingChatWidget(
+        child: IndexedStack(
+          index: _currentIndex,
+          children: _pages,
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
