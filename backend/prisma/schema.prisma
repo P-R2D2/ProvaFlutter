@@ -18,6 +18,8 @@ model User {
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   portfolios       Portfolio[]
+  chatSessions     ChatSession[]
+  proactiveInsights ProactiveInsight[]
 
   @@map("users")
 }
@@ -49,4 +51,51 @@ model Investment {
   updatedAt     DateTime  @updatedAt
 
   @@map("investments")
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum InsightType {
+  CONCENTRATION
+  DIVERSIFICATION
+  OPPORTUNITY
+}
+
+model ChatSession {
+  id         String        @id @default(uuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  lastActive DateTime      @default(now())
+  messages   ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String      @id @default(uuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      ChatRole
+  content   String
+  createdAt DateTime    @default(now())
+
+  @@map("chat_messages")
+}
+
+model ProactiveInsight {
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      InsightType
+  content   String      @db.Text
+  isRead    Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  @@map("proactive_insights")
 }

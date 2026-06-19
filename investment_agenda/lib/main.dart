@@ -15,6 +15,12 @@ import 'features/assets/data/repositories/assets_repository_impl.dart';
 import 'features/assets/data/datasources/assets_remote_data_source.dart';
 import 'features/portfolios/presentation/providers/portfolio_provider.dart';
 import 'features/portfolios/data/repositories/portfolio_repository_impl.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'features/advisor/presentation/providers/chat_provider.dart';
+import 'features/advisor/domain/usecases/send_message_usecase.dart';
+import 'features/advisor/data/repositories/chat_repository_impl.dart';
+import 'features/advisor/data/datasources/chat_remote_data_source.dart';
+import 'features/advisor/presentation/widgets/floating_chat_widget.dart';
 
 void main() {
   runApp(
@@ -81,6 +87,23 @@ void main() {
             }
             return provider!;
           },
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, ChatProvider>(
+          create: (context) {
+            final client = context.read<AuthenticatedHttpClient>();
+            return ChatProvider(
+              sendMessageUseCase: SendMessageUseCase(
+                ChatRepositoryImpl(
+                  remoteDataSource: ChatRemoteDataSourceImpl(
+                    baseUrl: 'http://localhost:3000', // Assuming local backend, you might want to use a config
+                    client: client,
+                    secureStorage: const FlutterSecureStorage(),
+                  ),
+                ),
+              ),
+            );
+          },
+          update: (context, auth, chat) => chat!,
         ),
       ],
       child: const MyApp(),
